@@ -257,8 +257,11 @@ const UserManagement = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none pl-10" // Added `pl-10` to provide space for the icon
               />
-            </div> 
+            </div>
           </div>
+
+
+
 
           {/* Download Button */}
           <div className="ml-auto mt-6">
@@ -291,7 +294,7 @@ const UserManagement = () => {
                 <td className="p-2">{user.name}</td>
                 <td className="p-2">{user.username}</td>
                 <td className="p-2">{user.email}</td>
-                <td className="p-2 text-center">{user.status}</td>
+                <td className="p-2 text-center inline-block w-40 px-3 py-1 rounded-xl border ">{user.status}</td>
                 <td className="p-2">{user.phone}</td>
                 <td className="p-2 flex gap-4">
                   <button
@@ -323,11 +326,10 @@ const UserManagement = () => {
               <button
                 key={i + 1}
                 onClick={() => paginate(i + 1)}
-                className={`mx-1 px-3 py-1 rounded ${
-                  currentPage === i + 1
+                className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1
                     ? "bg-[#C91416] text-white"
                     : "bg-gray-200"
-                }`}
+                  }`}
               >
                 {i + 1}
               </button>
