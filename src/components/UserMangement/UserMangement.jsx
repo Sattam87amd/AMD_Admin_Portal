@@ -257,7 +257,7 @@ const UserManagement = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none pl-10" // Added `pl-10` to provide space for the icon
               />
-            </div>
+            </div> 
           </div>
 
           {/* Download Button */}
