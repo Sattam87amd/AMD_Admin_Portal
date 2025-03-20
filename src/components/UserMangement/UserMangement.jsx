@@ -27,12 +27,54 @@ const UserManagement = () => {
 
   // Dummy User Data (matches Attachment 6)
   const dummyUsers = [
-    { country: "Belarus", name: "Ivan", username: "Ravian", email: "radioivan@gmail.com", status: "Active", phone: "+9876543210" },
-    { country: "India", name: "Ram", username: "Ram123", email: "ram123@gmail.com", status: "Deactivate", phone: "+9876543210" },
-    { country: "India", name: "Lakhan", username: "Lakhan123", email: "lakhan123@gmail.com", status: "Suspended", phone: "+9876543210" },
-    { country: "UK", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com", status: "Active", phone: "+9876543210" },
-    { country: "Netherlands", name: "Jiteksi", username: "Jiteksi123", email: "jiteksi123@gmail.com", status: "Deactivate", phone: "+9876543210" },
-    { country: "USA", name: "Iranks", username: "Iranks123", email: "iranks123@gmail.com", status: "Active", phone: "+9876543210" },
+    {
+      country: "Belarus",
+      name: "Ivan",
+      username: "Ravian",
+      email: "radioivan@gmail.com",
+      status: "Active",
+      phone: "+9876543210",
+    },
+    {
+      country: "India",
+      name: "Ram",
+      username: "Ram123",
+      email: "ram123@gmail.com",
+      status: "Deactivate",
+      phone: "+9876543210",
+    },
+    {
+      country: "India",
+      name: "Lakhan",
+      username: "Lakhan123",
+      email: "lakhan123@gmail.com",
+      status: "Suspended",
+      phone: "+9876543210",
+    },
+    {
+      country: "UK",
+      name: "Aeran",
+      username: "Aeran123",
+      email: "aeran123@gmail.com",
+      status: "Active",
+      phone: "+9876543210",
+    },
+    {
+      country: "Netherlands",
+      name: "Jiteksi",
+      username: "Jiteksi123",
+      email: "jiteksi123@gmail.com",
+      status: "Deactivate",
+      phone: "+9876543210",
+    },
+    {
+      country: "USA",
+      name: "Iranks",
+      username: "Iranks123",
+      email: "iranks123@gmail.com",
+      status: "Active",
+      phone: "+9876543210",
+    },
     // Add more dummy users if needed
   ];
 
@@ -121,7 +163,8 @@ const UserManagement = () => {
 
   // Handle Deactivate/Activate - Toggle user status
   const handleStatusToggle = () => {
-    const updatedStatus = currentUser.status === "Active" ? "Deactivate" : "Active";
+    const updatedStatus =
+      currentUser.status === "Active" ? "Deactivate" : "Active";
     const updatedUsers = users.map((user) =>
       user.username === currentUser.username
         ? { ...user, status: updatedStatus }
@@ -140,7 +183,9 @@ const UserManagement = () => {
 
   // Handle Delete Confirmation
   const handleConfirmDelete = () => {
-    const updatedUsers = users.filter((user) => user.username !== userToDelete.username);
+    const updatedUsers = users.filter(
+      (user) => user.username !== userToDelete.username
+    );
     setUsers(updatedUsers);
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsDeletePopupOpen(false);
@@ -149,13 +194,17 @@ const UserManagement = () => {
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
-        <h1 className="text-2xl font-bold mb-4 text-[#191919] ">USER MANAGEMENT</h1>
+        <h1 className="text-2xl font-bold mb-4 text-[#191919] ">
+          USER MANAGEMENT
+        </h1>
 
         {/* Filter Section */}
         <div className="flex gap-4 items-center mb-6">
           {/* Country Dropdown */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">Select Country</label>
+            <label className="block mb-1 text-md text-[#191919] ">
+              Select Country
+            </label>
             <select
               className="p-2 rounded-full border border-gray-300 w-44 bg-gray-100 text-[#C91416] focus:outline-none"
               value={selectedCountry}
@@ -172,7 +221,9 @@ const UserManagement = () => {
 
           {/* Last Active Dropdown */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">Select by Last Active</label>
+            <label className="block mb-1 text-md text-[#191919] ">
+              Select by Last Active
+            </label>
             <select
               className="p-2 px-3 rounded-2xl border border-gray-300 w-48 bg-gray-100 text-[#C91416] focus:outline-none"
               value={lastActive}
@@ -192,7 +243,9 @@ const UserManagement = () => {
 
           {/* Search by Country */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">Select by Country</label>
+            <label className="block mb-1 text-md text-[#191919] ">
+              Select by Country
+            </label>
             <div className="relative">
               <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
                 <Search className="m-1 text-white" size={16} />
@@ -202,7 +255,7 @@ const UserManagement = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none"
+                className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none pl-10" // Added `pl-10` to provide space for the icon
               />
             </div>
           </div>
@@ -253,9 +306,7 @@ const UserManagement = () => {
                   >
                     <MdDelete size={20} />
                   </button>
-                  <button
-                    className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
-                  >
+                  <button className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]">
                     <RiHistoryLine size={20} />
                   </button>
                 </td>
@@ -266,17 +317,22 @@ const UserManagement = () => {
 
         {/* Pagination */}
         <div className="flex justify-center mt-4">
-          {Array.from({ length: Math.ceil(filteredUsers.length / itemsPerPage) }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => paginate(i + 1)}
-              className={`mx-1 px-3 py-1 rounded ${
-                currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          {Array.from(
+            { length: Math.ceil(filteredUsers.length / itemsPerPage) },
+            (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => paginate(i + 1)}
+                className={`mx-1 px-3 py-1 rounded ${
+                  currentPage === i + 1
+                    ? "bg-[#C91416] text-white"
+                    : "bg-gray-200"
+                }`}
+              >
+                {i + 1}
+              </button>
+            )
+          )}
         </div>
       </div>
 
@@ -290,22 +346,32 @@ const UserManagement = () => {
               <input
                 type="email"
                 value={currentUser.email}
-                onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, email: e.target.value })
+                }
                 className="p-2 w-full mb-4 border border-gray-300 rounded-lg"
               />
               <label className="block text-md mb-1">Phone Number</label>
               <input
                 type="text"
                 value={currentUser.phone}
-                onChange={(e) => setCurrentUser({ ...currentUser, phone: e.target.value })}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, phone: e.target.value })
+                }
                 className="p-2 w-full mb-4 border border-gray-300 rounded-lg"
               />
             </div>
             <div className="flex gap-4">
-              <button onClick={handleUpdate} className="bg-[#5858FA] text-white p-2 w-full rounded-lg">
+              <button
+                onClick={handleUpdate}
+                className="bg-[#5858FA] text-white p-2 w-full rounded-lg"
+              >
                 UPDATE
               </button>
-              <button onClick={handleStatusToggle} className="bg-[#5858FA] text-white p-2 w-full rounded-lg">
+              <button
+                onClick={handleStatusToggle}
+                className="bg-[#5858FA] text-white p-2 w-full rounded-lg"
+              >
                 {currentUser.status === "Active" ? "DEACTIVATE" : "ACTIVATE"}
               </button>
             </div>
@@ -325,8 +391,13 @@ const UserManagement = () => {
       {isDeletePopupOpen && (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 opacity-90">
           <div className="bg-white p-6 rounded-lg w-96 shadow-lg  ">
-            <h2 className="text-xl font-bold mb-4 text-red-600">Confirm Delete</h2>
-            <p className="mb-4 border border-t-[#FA9E93] border-b-[#FA9E93] border-l-white border-r-white ">Are you sure you want to delete user permanently? You can’t undo this action.</p>
+            <h2 className="text-xl font-bold mb-4 text-red-600">
+              Confirm Delete
+            </h2>
+            <p className="mb-4 border border-t-[#FA9E93] border-b-[#FA9E93] border-l-white border-r-white ">
+              Are you sure you want to delete user permanently? You can’t undo
+              this action.
+            </p>
             <div className="flex gap-4">
               <button
                 onClick={() => setIsDeletePopupOpen(false)}
