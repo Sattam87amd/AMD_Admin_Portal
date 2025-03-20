@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
+import { MdEdit } from "react-icons/md"; // Edit Icon
+import { MdDelete } from "react-icons/md"; // Delete Icon
+import { RiHistoryLine } from "react-icons/ri"; // History Icon
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -12,6 +15,16 @@ const UserManagement = () => {
   const [lastActive, setLastActive] = useState("All Time");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
+
+  // New state for handling edit and delete popup visibility and current user data
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
+
   // Dummy User Data (matches Attachment 6)
   const dummyUsers = [
     { country: "Belarus", name: "Ivan", username: "Ravian", email: "radioivan@gmail.com", status: "Active", phone: "+9876543210" },
@@ -20,6 +33,7 @@ const UserManagement = () => {
     { country: "UK", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com", status: "Active", phone: "+9876543210" },
     { country: "Netherlands", name: "Jiteksi", username: "Jiteksi123", email: "jiteksi123@gmail.com", status: "Deactivate", phone: "+9876543210" },
     { country: "USA", name: "Iranks", username: "Iranks123", email: "iranks123@gmail.com", status: "Active", phone: "+9876543210" },
+    // Add more dummy users if needed
   ];
 
   // Fetch country data from API
@@ -68,7 +82,16 @@ const UserManagement = () => {
     }
 
     setFilteredUsers(tempUsers);
+    setCurrentPage(1); // Reset to the first page whenever filters change
   }, [selectedCountry, searchQuery, users]);
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Download Data to Excel
   const downloadExcel = () => {
@@ -78,16 +101,61 @@ const UserManagement = () => {
     writeFile(wb, "UserManagement.xlsx");
   };
 
+  // Open Popup on Edit Button Click
+  const handleEdit = (user) => {
+    setCurrentUser(user);
+    setIsPopupOpen(true);
+  };
+
+  // Handle Update - Save changes to localStorage
+  const handleUpdate = () => {
+    const updatedUsers = users.map((user) =>
+      user.username === currentUser.username
+        ? { ...user, email: currentUser.email, phone: currentUser.phone }
+        : user
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    setIsPopupOpen(false);
+  };
+
+  // Handle Deactivate/Activate - Toggle user status
+  const handleStatusToggle = () => {
+    const updatedStatus = currentUser.status === "Active" ? "Deactivate" : "Active";
+    const updatedUsers = users.map((user) =>
+      user.username === currentUser.username
+        ? { ...user, status: updatedStatus }
+        : user
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    setIsPopupOpen(false);
+  };
+
+  // Open Delete Popup on Delete Button Click
+  const handleDelete = (user) => {
+    setUserToDelete(user);
+    setIsDeletePopupOpen(true);
+  };
+
+  // Handle Delete Confirmation
+  const handleConfirmDelete = () => {
+    const updatedUsers = users.filter((user) => user.username !== userToDelete.username);
+    setUsers(updatedUsers);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    setIsDeletePopupOpen(false);
+  };
+
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
         <h1 className="text-2xl font-bold mb-4 text-[#191919] ">USER MANAGEMENT</h1>
 
-        {/* Filter Section (Attachment 5) */}
+        {/* Filter Section */}
         <div className="flex gap-4 items-center mb-6">
-          {/* Country Dropdown (Attachment 1) */}
+          {/* Country Dropdown */}
           <div>
-            <label className="block mb-1 text-md  text-[#191919] ">Select Country</label>
+            <label className="block mb-1 text-md text-[#191919] ">Select Country</label>
             <select
               className="p-2 rounded-full border border-gray-300 w-44 bg-gray-100 text-[#C91416] focus:outline-none"
               value={selectedCountry}
@@ -102,9 +170,9 @@ const UserManagement = () => {
             </select>
           </div>
 
-          {/* Last Active Dropdown (Attachment 2) */}
+          {/* Last Active Dropdown */}
           <div>
-            <label className="block mb-1 text-md  text-[#191919] ">Select by Last Active</label>
+            <label className="block mb-1 text-md text-[#191919] ">Select by Last Active</label>
             <select
               className="p-2 px-3 rounded-2xl border border-gray-300 w-48 bg-gray-100 text-[#C91416] focus:outline-none"
               value={lastActive}
@@ -122,26 +190,25 @@ const UserManagement = () => {
             </select>
           </div>
 
-          {/* Search by Country (Attachment 3) */}
+          {/* Search by Country */}
           <div>
-            <label className="block mb-1 text-md  text-[#191919] ">Select by Country</label>
+            <label className="block mb-1 text-md text-[#191919] ">Select by Country</label>
             <div className="relative">
-              <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2 " >
-            <Search className=" m-1  right-2 top-2  text-white" size={16} />
-            </div>
+              <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
+                <Search className="m-1 text-white" size={16} />
+              </div>
 
               <input
                 type="text"
-                placeholder=""
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="p-2 rounded-full border border-gray-300 w-48  bg-gray-100 text-gray-700 focus:outline-none"
+                className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Download Button (Attachment 4) */}
-          <div className="ml-auto mt-6 ">
+          {/* Download Button */}
+          <div className="ml-auto mt-6">
             <button
               onClick={downloadExcel}
               className="p-2 bg-black text-white rounded flex items-center gap-2"
@@ -151,111 +218,132 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Data Table (Attachment 6) */}
-        <table className="w-full ">
-        <thead className="border-y-2 border-[#FA9E93]">
-  <tr>
-    <th className="p-2 text-center relative">
-      COUNTRY NAME
-      <span className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-gray-400"></span>
-    </th>
-    <th className="p-2 text-center relative">
-      NAME
-      <span className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-gray-400"></span>
-    </th>
-    <th className="p-2 text-center relative">
-      USERNAME
-      <span className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-gray-400"></span>
-    </th>
-    <th className="p-2 text-center relative">
-      EMAIL
-      <span className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-gray-400"></span>
-    </th>
-    <th className="p-2 text-center relative">
-      STATUS
-      <span className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-gray-400"></span>
-    </th>
-    <th className="p-2 text-center relative">
-      PHONE NUMBER
-      <span className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-gray-400"></span>
-    </th>
-    <th className="p-2 text-center">ACTION</th>
-  </tr>
-</thead>
-
-
+        {/* Data Table */}
+        <table className="w-full">
+          <thead className="border-y-2 border-[#FA9E93]">
+            <tr>
+              <th className="p-2 text-center">COUNTRY NAME</th>
+              <th className="p-2 text-center">NAME</th>
+              <th className="p-2 text-center">USERNAME</th>
+              <th className="p-2 text-center">EMAIL</th>
+              <th className="p-2 text-center">STATUS</th>
+              <th className="p-2 text-center">PHONE NUMBER</th>
+              <th className="p-2 text-center">ACTION</th>
+            </tr>
+          </thead>
           <tbody>
-            {filteredUsers.map((user, index) => (
+            {currentItems.map((user, index) => (
               <tr key={index} className="hover:bg-gray-100">
-                <td className=" p-2">{user.country}</td>
-                <td className=" p-2">{user.name}</td>
-                <td className=" p-2">{user.username}</td>
-                <td className=" p-2">{user.email}</td>
-                <td className="p-2 text-center">
-  <span
-    className={`inline-block w-40 px-3 py-1 rounded-xl border ${
-      user.status === "Active"
-        ? "bg-white text-black"
-        : user.status === "Deactivate"
-        ? "bg-white text-black"
-        : "bg-white text-black"
-    }`}
-  >
-    {user.status}
-  </span>
-</td>
-
-                <td className=" p-2">{user.phone}</td>
+                <td className="p-2">{user.country}</td>
+                <td className="p-2">{user.name}</td>
+                <td className="p-2">{user.username}</td>
+                <td className="p-2">{user.email}</td>
+                <td className="p-2 text-center">{user.status}</td>
+                <td className="p-2">{user.phone}</td>
                 <td className="p-2 flex gap-4">
-  {/* Edit Button */}
-  <button className="text-blue-600 hover:text-blue-800">
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-    </svg>
-  </button>
-
-  {/* Delete Button */}
-  <button className="text-red-600 hover:text-red-800">
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-    </svg>
-  </button>
-
-  {/* History Button */}
-  <button className="text-gray-600 hover:text-gray-800">
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M13 3l9 9-9 9M4 12H21"></path>
-    </svg>
-  </button>
-</td>
-
+                  <button
+                    className="text-black border border-black w-6 h-6 rounded-md"
+                    onClick={() => handleEdit(user)}
+                  >
+                    <MdEdit size={20} />
+                  </button>
+                  <button
+                    className="text-[#EC6453] border border-black w-[1.6rem] h-[1.5rem] px-[0.16rem] rounded-md"
+                    onClick={() => handleDelete(user)}
+                  >
+                    <MdDelete size={20} />
+                  </button>
+                  <button
+                    className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
+                  >
+                    <RiHistoryLine size={20} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        <div className="flex justify-center mt-4">
+          {Array.from({ length: Math.ceil(filteredUsers.length / itemsPerPage) }, (_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => paginate(i + 1)}
+              className={`mx-1 px-3 py-1 rounded ${
+                currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Edit Popup */}
+      {isPopupOpen && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 opacity-90">
+          <div className="bg-white p-6 rounded-lg w-96 shadow-lg opacity-[150%]">
+            <h2 className="text-xl font-bold mb-4">Edit User</h2>
+            <div>
+              <label className="block text-md mb-1">Email</label>
+              <input
+                type="email"
+                value={currentUser.email}
+                onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+                className="p-2 w-full mb-4 border border-gray-300 rounded-lg"
+              />
+              <label className="block text-md mb-1">Phone Number</label>
+              <input
+                type="text"
+                value={currentUser.phone}
+                onChange={(e) => setCurrentUser({ ...currentUser, phone: e.target.value })}
+                className="p-2 w-full mb-4 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div className="flex gap-4">
+              <button onClick={handleUpdate} className="bg-[#5858FA] text-white p-2 w-full rounded-lg">
+                UPDATE
+              </button>
+              <button onClick={handleStatusToggle} className="bg-[#5858FA] text-white p-2 w-full rounded-lg">
+                {currentUser.status === "Active" ? "DEACTIVATE" : "ACTIVATE"}
+              </button>
+            </div>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setIsPopupOpen(false)}
+                className=" border text-black p-2 w-38 px-10 rounded-lg"
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Popup */}
+      {isDeletePopupOpen && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 opacity-90">
+          <div className="bg-white p-6 rounded-lg w-96 shadow-lg  ">
+            <h2 className="text-xl font-bold mb-4 text-red-600">Confirm Delete</h2>
+            <p className="mb-4 border border-t-[#FA9E93] border-b-[#FA9E93] border-l-white border-r-white ">Are you sure you want to delete user permanently? You can’t undo this action.</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setIsDeletePopupOpen(false)}
+                className="bg-gray-300 text-black p-2 w-full rounded-lg"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="bg-red-500 text-white p-2 w-full rounded-lg"
+              >
+                DELETE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
