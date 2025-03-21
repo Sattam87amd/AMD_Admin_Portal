@@ -9,7 +9,10 @@ import ExpertsPopularity from "@/components/Dashboard/ExpertsPopularity ";
 const Page = () => {
   return (
     <div>
-      
+      <AdminSidebar/>
+      <LatestRegistration/>
+      <ExpertsPopularity/>
+
     </div>
   );
 };
