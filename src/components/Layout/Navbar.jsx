@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from "react";
 import { AiOutlineBell } from "react-icons/ai"; // Notification icon
 import { FaUserCircle } from "react-icons/fa"; // Profile icon
