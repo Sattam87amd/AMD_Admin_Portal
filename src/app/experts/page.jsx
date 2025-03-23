@@ -1,10 +1,20 @@
+import Footer from '@/components/Layout/Footer'
+import Navbar from '@/components/Layout/Navbar'
+import AdminSidebar from '@/components/Layout/Sidebar'
 import Experts from '@/components/Experts/Experts'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      <Experts />
+      <Navbar/>
+      <div className='flex '> 
+        <div className='w-[400px]'>
+      <AdminSidebar/>
+        </div>
+      <Experts/>
+      </div>
+      <Footer/>
     </div>
   )
 }
