@@ -11,7 +11,7 @@ const Page = () => {
     <div>
       <AdminSidebar/>
       <LatestRegistration/>
-      <ExpertsPopularity/>
+      {/* <ExpertsPopularity/> */}
 
     </div>
   );
