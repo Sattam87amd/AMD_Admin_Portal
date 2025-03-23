@@ -1,7 +1,7 @@
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
-import PaymentFinance from '@/components/Payment-Finance/PaymentFinance'
+import PaymentFinance from '@/components/PaymentFinance/PaymentFinance'
 import React from 'react'
 
 const page = () => {
