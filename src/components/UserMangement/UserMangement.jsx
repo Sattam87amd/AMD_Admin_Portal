@@ -17,7 +17,7 @@ const UserManagement = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
+  const [itemsPerPage, setItemsPerPage] = useState(5); // Default items per page
 
   // New state for handling edit and delete popup visibility and current user data
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -340,7 +340,7 @@ const UserManagement = () => {
 
       {/* Edit Popup */}
       {isPopupOpen && (
-        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 opacity-90">
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg w-96 shadow-lg opacity-[150%]">
             <h2 className="text-xl font-bold mb-4">Edit User</h2>
             <div>
@@ -391,7 +391,7 @@ const UserManagement = () => {
 
       {/* Delete Confirmation Popup */}
       {isDeletePopupOpen && (
-        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 opacity-90">
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg w-96 shadow-lg  ">
             <h2 className="text-xl font-bold mb-4 text-red-600">
               Confirm Delete

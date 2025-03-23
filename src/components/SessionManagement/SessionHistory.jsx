@@ -6,9 +6,9 @@ import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoEyeOutline } from "react-icons/io5";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
-const SessionManagement = () => {
+const SessionHistory = () => {
   // State for active session type (Action Session or Session History)
-  const [activeSession, setActiveSession] = useState("Action Session");
+  const [activeSession, setActiveSession] = useState("Session History");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -21,17 +21,16 @@ const SessionManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const sessionsPerPage = 5;
 
-  // Dummy session data
-  const dummySessions = [
+  // Dummy session history data
+  const dummySessionsHistory = [
     {
       sessionId: "#01",
       user: "Ivan",
       expert: "Jane Smith",
       date: "2025-02-26",
       time: "10:00 AM",
-      status: "Completed",
-      amount: "$150",
-      cancelReason: null,
+      duration: "45 mins",
+      feedback: "Very helpful session",
     },
     {
       sessionId: "#02",
@@ -39,9 +38,8 @@ const SessionManagement = () => {
       expert: "Jane Smith",
       date: "2025-02-26",
       time: "10:00 AM",
-      status: "Ongoing",
-      amount: "$100",
-      cancelReason: null,
+      duration: "45 mins",
+      feedback: "Very helpful session",
     },
     {
       sessionId: "#03",
@@ -49,9 +47,8 @@ const SessionManagement = () => {
       expert: "Jane Smith",
       date: "2025-02-26",
       time: "10:00 AM",
-      status: "Completed",
-      amount: "$120",
-      cancelReason: null,
+      duration: "45 mins",
+      feedback: "Very helpful session",
     },
     {
       sessionId: "#04",
@@ -59,9 +56,8 @@ const SessionManagement = () => {
       expert: "Jane Smith",
       date: "2025-02-26",
       time: "10:00 AM",
-      status: "Canceled",
-      amount: "$0",
-      cancelReason: "Canceled by Expert",
+      duration: "45 mins",
+      feedback: "Very helpful session",
     },
     {
       sessionId: "#05",
@@ -69,9 +65,8 @@ const SessionManagement = () => {
       expert: "Jane Smith",
       date: "2025-02-26",
       time: "10:00 AM",
-      status: "Completed",
-      amount: "$150",
-      cancelReason: null,
+      duration: "45 mins",
+      feedback: "Very helpful session",
     },
     {
       sessionId: "#06",
@@ -79,26 +74,23 @@ const SessionManagement = () => {
       expert: "Jane Smith",
       date: "2025-02-26",
       time: "10:00 AM",
-      status: "Completed",
-      amount: "$130",
-      cancelReason: null,
+      duration: "45 mins",
+      feedback: "Very helpful session",
     },
   ];
 
-  // Filter sessions based on status and search query
-  const filteredSessions = dummySessions.filter((session) => {
-    // Check if any of the fields match the search query
+  // Filter sessions based on search query
+  const filteredSessions = dummySessionsHistory.filter((session) => {
     const searchLower = searchQuery.toLowerCase();
     return (
       session.sessionId.toLowerCase().includes(searchLower) ||
       session.user.toLowerCase().includes(searchLower) ||
       session.expert.toLowerCase().includes(searchLower) ||
       session.date.toLowerCase().includes(searchLower) ||
-      session.time.toLowerCase().includes(searchLower)
+      session.time.toLowerCase().includes(searchLower) ||
+      session.duration.toLowerCase().includes(searchLower) ||
+      session.feedback.toLowerCase().includes(searchLower)
     );
-  }).filter((session) => {
-    if (statusFilter === "All Status") return true;
-    return session.status === statusFilter;
   });
 
   // Pagination logic
@@ -112,12 +104,6 @@ const SessionManagement = () => {
   // Handle dropdown toggle
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  // Handle status selection
-  const handleStatusSelect = (status) => {
-    setStatusFilter(status);
-    setIsDropdownOpen(false); // Close dropdown after selecting
-  };
-
   // Open Popup with session details
   const openPopup = (session) => {
     setSelectedSession(session);
@@ -130,54 +116,13 @@ const SessionManagement = () => {
     setSelectedSession(null);
   };
 
-  // Export sessions to CSV format
-  const exportToCSV = () => {
-    const headers = [
-      "Session ID",
-      "User",
-      "Expert",
-      "Date",
-      "Time",
-      "Status",
-      "Amount"
-    ];
-  
-    const rows = filteredSessions.map(session => [
-      session.sessionId,
-      session.user,
-      session.expert,
-      session.date,
-      session.time,
-      session.status,
-      session.amount
-    ]);
-  
-    let csvContent = "data:text/csv;charset=utf-8," 
-                     + headers.join(",") + "\n"
-                     + rows.map(row => row.join(",")).join("\n");
-  
-    // Encode CSV content
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "session_history.csv"); // Name of the file to download
-    link.click();
-  };
-  
-
   return (
     <div className="flex justify-center w-full min-h-screen p-6 bg-white overflow-x-scroll">
       <div className="w-full max-w-screen-xl px-4">
-        <h1 className="text-2xl font-bold mb-4 text-[#191919]">SESSION MANAGEMENT</h1>
+        <h1 className="text-2xl font-bold mb-4 text-[#191919]">SESSION HISTORY</h1>
 
         {/* Buttons for Action Session and Session History */}
         <div className="flex gap-1 mb-2">
-          <button
-            onClick={() => setActiveSession("Action Session")}
-            className={`py-2 px-6 ${activeSession === "Action Session" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
-          >
-            Action Session
-          </button>
           <button
             onClick={() => setActiveSession("Session History")}
             className={`py-2 px-6 ${activeSession === "Session History" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
@@ -204,44 +149,19 @@ const SessionManagement = () => {
               placeholder="Search by Session"
             />
           </div>
-
-          {/* Status Dropdown */}
-          <div className="relative mt-8 sm:mt-0">
-            <button
-              onClick={toggleDropdown}
-              className="p-2 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-2"
-            >
-              {statusFilter} <RiArrowDropDownLine size={20} />
-            </button>
-            {isDropdownOpen && (
-              <div className="absolute bg-white border border-gray-300 w-40 mt-2 rounded-lg shadow-lg">
-                <button onClick={() => handleStatusSelect("All Status")} className="px-4 py-2 text-sm w-full text-left">
-                  All Status
-                </button>
-                <button onClick={() => handleStatusSelect("Ongoing")} className="px-4 py-2 text-sm w-full text-left">
-                  Ongoing
-                </button>
-                <button onClick={() => handleStatusSelect("Completed")} className="px-4 py-2 text-sm w-full text-left">
-                  Completed
-                </button>
-                <button onClick={() => handleStatusSelect("Canceled")} className="px-4 py-2 text-sm w-full text-left">
-                  Canceled
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* CSV Component */}
         <div className="flex justify-end gap-4 sm:-mt-24 pb-10 mb-10">
-          {/* Export as CSV Format Text */}
           <div className="flex items-center text-red-500">
             <span className="text-sm">Export as CSV Format</span>
           </div>
 
-          {/* Download Button */}
           <div>
-            <button onClick={exportToCSV} className="p-2 bg-black text-white rounded flex items-center">
+            <button
+              // Implement Excel download here
+              className="p-2 bg-black text-white rounded flex items-center"
+            >
               <Download size={16} />
             </button>
           </div>
@@ -257,7 +177,8 @@ const SessionManagement = () => {
                   <th className="p-2 text-center">USER</th>
                   <th className="p-2 text-center">EXPERT</th>
                   <th className="p-2 text-center">DATE/TIME</th>
-                  <th className="p-2 text-center">STATUS</th>
+                  <th className="p-2 text-center">DURATION</th>
+                  <th className="p-2 text-center">FEEDBACK</th>
                   <th className="p-2 text-center">ACTION</th>
                 </tr>
               </thead>
@@ -268,19 +189,8 @@ const SessionManagement = () => {
                     <td className="p-2">{session.user}</td>
                     <td className="p-2">{session.expert}</td>
                     <td className="p-2">{session.date}<br />{session.time}</td>
-                    <td className="p-2 text-center">
-                      <span
-                        className={`px-2 py-1 rounded-lg ${
-                          session.status === "Ongoing"
-                            ? "bg-yellow-400 text-black"
-                            : session.status === "Completed"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white"
-                        }`}
-                      >
-                        {session.status}
-                      </span>
-                    </td>
+                    <td className="p-2">{session.duration}</td>
+                    <td className="p-2">{session.feedback}</td>
                     <td className="p-2 text-center">
                       <button
                         onClick={() => openPopup(session)}
@@ -344,7 +254,7 @@ const SessionManagement = () => {
             </div>
 
             {/* Horizontal Table Layout */}
-            <div className="space-y-2"> {/* Reduced spacing between rows */}
+            <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-[#191919] font-medium w-1/3">Session Id</span>
                 <span className="font-normal w-2/3 text-right">{selectedSession.sessionId}</span>
@@ -362,16 +272,12 @@ const SessionManagement = () => {
                 <span className="font-normal w-2/3 text-right">{selectedSession.expert}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#191919] font-medium w-1/3">Amount</span>
-                <span className="font-normal w-2/3 text-right">{selectedSession.amount}</span>
+                <span className="text-[#191919] font-medium w-1/3">Duration</span>
+                <span className="font-normal w-2/3 text-right">{selectedSession.duration}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#191919] font-medium w-1/3">Status</span>
-                <span className="font-normal w-2/3 text-right">
-                  {selectedSession.status === "Canceled"
-                    ? `Canceled by ${selectedSession.cancelReason}`
-                    : selectedSession.status}
-                </span>
+                <span className="text-[#191919] font-medium w-1/3">Feedback</span>
+                <span className="font-normal w-2/3 text-right">{selectedSession.feedback}</span>
               </div>
             </div>
 
@@ -391,4 +297,4 @@ const SessionManagement = () => {
   );
 };
 
-export default SessionManagement;
+export default SessionHistory;

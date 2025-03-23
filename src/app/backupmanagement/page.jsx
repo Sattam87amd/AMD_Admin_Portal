@@ -1,3 +1,4 @@
+import BackupManagement from '@/components/BackupManagement/BackupManagement'
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
@@ -22,7 +23,7 @@ const Page = () => {
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
-          <SessionManagement />
+          <BackupManagement />
           
           <Footer />
         </div>
