@@ -8,9 +8,13 @@ import React from 'react'
 const page = () => {
   return (
     <div>
+       
+      <div className='h-[90px]'>
       <Navbar/>
+      </div>
+
       <div className='flex '> 
-        <div className='w-[400px]'>
+        <div className='w-[300px]'>
       <AdminSidebar/>
         </div>
       <PendingExpertsRequestProfile/>
