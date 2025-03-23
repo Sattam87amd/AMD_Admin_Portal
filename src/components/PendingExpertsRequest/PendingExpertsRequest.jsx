@@ -172,7 +172,7 @@ const PendingExpertsRequest = () => {
         <button
           onClick={nextPage}
           disabled={currentPage === totalPages}
-          className={`p-2 ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-600'}`}
+          className={`p-2 ${currentPage === totalPages ? 'text-red-500' : 'text-gray-600'}`}
         >
           <IoIosArrowForward size={20} />
         </button>
