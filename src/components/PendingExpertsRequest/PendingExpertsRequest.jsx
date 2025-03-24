@@ -215,7 +215,7 @@ const PendingExpertsRequest = () => {
 
             <div className="relative w-64">
               <h3>Select by Country</h3>
-              <Search className="absolute left-3 top-3/5 transform text-gray-200 bg-red-500 rounded-lg border border-red-500" size={18} />
+              <Search className="absolute left-3 bottom-3 transform text-gray-200 bg-red-500 rounded-full border border-red-500" size={18} />
               <input
                 type="text"
                 className="mt-2 p-2 pl-10 rounded-lg border border-black bg-gray-200 w-48"

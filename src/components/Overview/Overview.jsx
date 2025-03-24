@@ -230,12 +230,12 @@ const Overview = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex gap-4 items-end">
             {/* Select Expert */}
-            <div className="w-72">
+            <div className="w-52">
               <h2 className="text-[#191919] mb-1">Select Expert</h2>
               <select
                 value={selectedExpert}
                 onChange={(e) => setSelectedExpert(e.target.value)}
-                className="p-2 w-full rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none"
+                className="p-2 w-52 rounded-xl border border-black bg-[#E6E6E6] text-red-600 focus:outline-none"
               >
                 {uniqueExperts.map((expert) => (
                   <option key={expert} value={expert}>
@@ -247,13 +247,13 @@ const Overview = () => {
 
             {/* Filter by Status */}
             <div className="w-48">
-              <h2 className="text-[#191919] mb-1">Filter by Status</h2>
+              <h2 className="text-[#191919] mb-1">Select by Status</h2>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="p-2 w-full rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none"
+                className="p-2 w-full rounded-xl border border-black bg-[#E6E6E6] text-red-600 focus:outline-none"
               >
-                <option value="All">All Status</option>
+                <option value="All">All Time</option>
                 <option value="Not Processed">Not Processed</option>
                 <option value="Not Withdrawn">Not Withdrawn</option>
                 <option value="Withdrawn">Withdrawn</option>
@@ -261,14 +261,16 @@ const Overview = () => {
             </div>
 
             {/* Search by Transaction ID */}
-            <div className="w-72">
-              <h2 className="text-[#191919] mb-1">Search by Transaction ID</h2>
+            <div className="w-56">
+              <h2 className="text-[#191919] mb-1 ">Search by Transaction ID</h2>
+             <Search className="absolute transform text-gray-200 bg-red-500 rounded-full border border-red-500 ml-2 mt-3" size={18} />
+              
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter Transaction ID"
-                className="p-2 w-full rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none"
+                
+                className="p-2 w-full rounded-xl border border-black bg-[#E6E6E6] text-gray-700 focus:outline-none"
               />
             </div>
           </div>
@@ -284,44 +286,41 @@ const Overview = () => {
           </button>
         </div>
 
-        {/* Table */}
-        <table className="w-full">
-          <thead className="bg-white border-y-2 border-[#FA9E93]">
-            <tr>
-              {[
-                { label: "TRANSACTION ID", column: "transactionId" },
-                { label: "EXPERT", column: "expert" },
-                { label: "AMOUNT", column: "amount" },
-                { label: "STATUS", column: "status" },
-                { label: "DATE", column: "date" },
-              ].map(({ label, column }, index) => (
-                <th
-                  key={column}
-                  className={`p-3 text-center cursor-pointer ${index !== 0 ? "border-l border-gray-300" : ""
-                    }`}
-                  onClick={() => handleSort(column)}
-                >
-                  <div className="flex justify-center items-center gap-2">
-                    {label}
-                    <div className="flex flex-col">
-                      <FaSortUp
-                        className={`text-sm ${sortColumn === column && sortOrder === "asc"
-                          ? "text-red-500"
-                          : "text-gray-400"
-                          }`}
-                      />
-                      <FaSortDown
-                        className={`text-sm ${sortColumn === column && sortOrder === "desc"
-                          ? "text-red-500"
-                          : "text-gray-400"
-                          }`}
-                      />
-                    </div>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
+{/* Table */}
+<table className="w-full">
+  <thead className="bg-white border-y-2 border-[#FA9E93]">
+    <tr>
+      {[
+        { label: "TRANSACTION ID", column: "transactionId", isCloser: true },
+        { label: "EXPERT", column: "expert", isCloser: false },
+        { label: "AMOUNT", column: "amount", isCloser: false },
+        { label: "STATUS", column: "status", isCloser: false },
+        { label: "DATE", column: "date", isCloser: false },
+      ].map(({ label, column, isCloser }, index) => (
+        <th
+          key={column}
+          className={`p-3 text-center cursor-pointer ${index !== 0 ? "border-l border-gray-500" : ""}`}
+          onClick={() => handleSort(column)}
+        >
+          <div className={`flex justify-center items-center ${isCloser ? "gap-2" : "gap-5"}`}>
+            {label}
+            <div className="flex flex-col">
+              <FaSortUp
+                className={`text-sm ${sortColumn === column && sortOrder === "asc" ? "text-black" : "text-black"}`}
+              />
+              <FaSortDown
+                className={`text-sm ${sortColumn === column && sortOrder === "desc" ? "text-black" : "text-black"}`}
+              />
+            </div>
+          </div>
+        </th>
+      ))}
+    </tr>
+  </thead>
+
+
+
+
 
           {/* Table Body */}
           <tbody>
@@ -362,18 +361,18 @@ const Overview = () => {
 
         {/* Total Sessions Info */}
         <div className="flex justify-center items-center mt-4 mb-2 text-gray-700">
-          <p className="text-sm text-red-500">{filteredSessions.length} total</p>
+          <p className="text-sm text-red-500">{filteredSessions.length} Total</p>
         </div>
 
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
-          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg">
+          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
             {/* Previous Button */}
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
               className={`p-2 rounded-lg ${currentPage === 1
-                ? "text-gray-300 cursor-not-allowed"
+                ? "text-gray-500 cursor-not-allowed"
                 : "text-red-500"
                 }`}
             >
