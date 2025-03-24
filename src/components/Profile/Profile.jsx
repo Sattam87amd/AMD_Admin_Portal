@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { CgProfile } from "react-icons/cg"; // Profile icon from react-icons
 import { RiEdit2Fill } from "react-icons/ri"; // Edit icon from react-icons
 import { RxCross2 } from "react-icons/rx"; // Close icon from react-icons
+// import { CgProfile } from 'react-icons/cg';
+import { FiEdit } from 'react-icons/fi';
 
 const ProfileDetails = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -25,20 +27,25 @@ const ProfileDetails = () => {
 
   return (
     <div className="flex items-left w-full p-6 bg-white">
-      <div className="w-full max-w-md border p-6 rounded-xl shadow-md">
+      <div className="w-full max-w-md p-6 rounded-xl ">
         {/* Add "PROFILE DETAILS" in uppercase above the profile icon */}
         <h2 className="text-xl font-semibold uppercase mb-4">PROFILE DETAILS</h2>
 
         <div className="flex items-center mb-4">
-          <div className="w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center">
-            <CgProfile size={40} className="text-gray-700" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">{name || "Wajiha"}</h2>
-            <p className="text-sm text-gray-500">{email || "wajiha07@gmail.com"}</p>
-          </div>
-          
-        </div>
+  <div className="relative w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center">
+    <CgProfile size={40} className="text-gray-700" />
+    <FiEdit size={18} className="absolute text-gray-500 bottom-0 right-0 cursor-pointer" />
+  </div>
+  
+  <div className="flex items-center">
+    <div className="w-px h-8 bg-[#FA9E93] mx-1"></div> {/* This is the line between the profile and name */}
+    <div>
+      <h2 className="text-xl font-semibold">{name || "Wajiha"}</h2>
+      <p className="text-sm text-gray-500">{email || "wajiha07@gmail.com"}</p>
+    </div>
+  </div>
+</div>
+
 
         <div className="mb-4">
           <label htmlFor="name" className="block text-sm font-semibold">
@@ -69,14 +76,12 @@ const ProfileDetails = () => {
 
         {/* Move the Edit Details button to the bottom of the profile */}
         <div className="mt-4">
-          <button
-            onClick={handleEditClick}
-            className="flex items-center text-[#EC6453]"
-          >
-            <RiEdit2Fill size={16} className="mr-2" />
-            Edit Details
-          </button>
-        </div>
+  <button onClick={handleEditClick} className="flex items-center">
+    <RiEdit2Fill size={16} className="mr-2" />
+    <span className="text-[#EC6453]">Edit Details</span>
+  </button>
+</div>
+
 
         {/* Popup Modal for Editing Details */}
         {isEditing && (

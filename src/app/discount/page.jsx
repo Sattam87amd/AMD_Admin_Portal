@@ -1,8 +1,8 @@
 'use client'
+import Discount from '@/components/Discount/Discount'
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
-import Profile from '@/components/Profile/Profile'
 // import Withdrawal from '@/components/Withdrawal/Withdrawal'
 // import Transaction from '@/components/Transaction/Transaction'
 import React from 'react'
@@ -25,8 +25,8 @@ const Page = () => {
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
-          <Profile />
-          <div className="fixed inset-x-0 w-[83.5%] ml-[16.5%] bottom-0  p-4 shadow-lg">
+          <Discount />
+          <div >
           
           <Footer />
           </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const Transaction = () => {
   const [transactions, setTransactions] = useState([]);
@@ -167,8 +168,8 @@ const Transaction = () => {
   };
 
   return (
-    <div className="flex justify-center w-full p-4 sm:p-6 bg-white">
-      <div className="w-full sm:w-11/12">
+    <div className="flex justify-left w-full p-4 sm:p-6 bg-white">
+      <div className="w-full sm:w-11/16">
         <h1 className="text-xl sm:text-2xl font-bold mb-4">Transactions</h1>
 
         {/* Filters Section */}
@@ -236,7 +237,7 @@ const Transaction = () => {
             <thead className="border-y-2 border-[#FA9E93]">
               <tr>
                 <th
-                  className="p-2 border-x-2 border-[#808080] p-1 cursor-pointer"
+                  className="p-1 border-x-1 border-[#808080] p-1 cursor-pointer"
                   onClick={() => requestSort("transactionId")}
                 >
                   <div className="flex items-center">
@@ -308,18 +309,37 @@ const Transaction = () => {
           </table>
         </div>
 
-        {/* Pagination Section */}
-        <div className="flex justify-center mt-4">
-          {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => paginate(i + 1)}
-              className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+{/* Pagination Section */}
+<div className="flex justify-center items-center mt-4">
+  {/* Left Arrow */}
+  <button
+    onClick={() => paginate(currentPage - 1)}
+    disabled={currentPage === 1}
+    className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+  >
+    <FaChevronLeft />
+  </button>
+
+  {/* Page Numbers */}
+  {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
+    <button
+      key={i}
+      onClick={() => paginate(i + 1)}
+      className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
+    >
+      {i + 1}
+    </button>
+  ))}
+
+  {/* Right Arrow */}
+  <button
+    onClick={() => paginate(currentPage + 1)}
+    disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
+    className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+  >
+    <FaChevronRight />
+  </button>
+</div>
       </div>
     </div>
   );
