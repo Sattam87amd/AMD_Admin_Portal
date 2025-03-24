@@ -135,7 +135,7 @@ const LatestRegistration = () => {
   };
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 w-[1200px]">
       {/* Admin Greeting + Latest Registration Box */}
       <div className="space-y-4">
         {/* Admin Greeting */}
@@ -161,7 +161,7 @@ const LatestRegistration = () => {
           </div>
         </div>
       </div>
-
+   <div className="w-full h-0.5 bg-gray-400"></div>
       {/* Chart Section */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Latest Registrations</h2>

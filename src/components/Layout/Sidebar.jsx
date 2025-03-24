@@ -34,7 +34,7 @@ const AdminSidebar = () => {
       <div className="space-y-2">
         {/* Sidebar Button Component */}
         {[
-          { name: "Dashboard", icon: <FaTachometerAlt /> },
+          { name: "Dashboard", icon: <FaTachometerAlt routes/> },
           {
             name: "User Management",
             icon: <FaUserAlt />,
