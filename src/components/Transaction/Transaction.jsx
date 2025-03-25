@@ -154,7 +154,7 @@ const Transaction = () => {
 
   const getArrowIcons = (key) => {
     return (
-      <div className="flex flex-col ml-1">
+      <div className="flex flex-col ml-2 right">
         <IoMdArrowDropup
           className={`w-3 h-3 ${sortConfig.key === key && sortConfig.direction === "asc" ? "text-red-500" : "text-gray-400"}`}
         />
@@ -241,17 +241,17 @@ const Transaction = () => {
                     TRANSACTION ID
                     {getArrowIcons("transactionId")}
                   </div>
-                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
+                  <div className="absolute right-5 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
                   className="p-2 cursor-pointer relative"
                   onClick={() => requestSort("user")}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center ">
                     USER
-                    {getArrowIcons("user")}
+                     {getArrowIcons("user")}
                   </div>
-                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
+                  <div className="absolute right-2 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
                   className="p-2 cursor-pointer relative"
@@ -261,7 +261,7 @@ const Transaction = () => {
                     EXPERT BOOKED
                     {getArrowIcons("expertBooked")}
                   </div>
-                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
+                  <div className="absolute right-3 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
                   className="p-2 cursor-pointer relative"
@@ -271,7 +271,7 @@ const Transaction = () => {
                     AMOUNT
                     {getArrowIcons("amount")}
                   </div>
-                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
+                  <div className="absolute right-4 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
                   className="p-2 cursor-pointer relative"
@@ -281,7 +281,7 @@ const Transaction = () => {
                     DATE
                     {getArrowIcons("date")}
                   </div>
-                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
+                  <div className="absolute right-3 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
                   className="p-2 cursor-pointer relative"
