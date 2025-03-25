@@ -23,7 +23,7 @@ const Page = () => {
         </div>
 
         {/* Red Divider */}
-        <div className="absolute left-[262px] top-0 w-1 bg-red-600 h-[171.4rem] z-10"></div> {/* Explicitly position the divider */}
+        <div className="absolute left-[220px] top-0 w-1 bg-red-600 h-[171.4rem] z-10"></div> {/* Explicitly position the divider */}
 
         {/* Main Content (Right) */}
         <div className="flex-1 pl-2">
@@ -34,7 +34,7 @@ const Page = () => {
         </div>
       </div>
 
-       <div className='w-[76.2rem] ml-[17rem]'>  
+       <div className='w-[77rem] ml-[14rem]'>  
       <Footer />
       </div>
       {/* Footer at Bottom */}
