@@ -100,7 +100,7 @@ const Transaction = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -210,8 +210,8 @@ const Transaction = () => {
             </div>
           </div>
 
-          <button 
-            onClick={downloadExcel} 
+          <button
+            onClick={downloadExcel}
             className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg ml-96"
           >
             <Download size={24} className="text-white" />
@@ -224,7 +224,7 @@ const Transaction = () => {
             <thead className="border-y-2 border-red-400">
               <tr>
                 <th
-                  className="p-1 border-x-1 border-[#80808] p-1 cursor-pointer"
+                  className="p-1 border-x-1 border-[#808080] p-1 cursor-pointer"
                   onClick={() => requestSort("transactionId")}
                 >
                   <div className="flex items-center">

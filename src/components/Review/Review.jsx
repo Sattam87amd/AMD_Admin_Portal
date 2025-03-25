@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation"; // For redirect
 import { Search } from "lucide-react";
-import { FaDownload, FaRegFlag } from "react-icons/fa";
+import { Download } from "lucide-react";
+import { CheckCircle, XCircle, Flag } from "lucide-react";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
 const Review = () => {
@@ -100,7 +101,7 @@ const Review = () => {
     } else if (action === "reject") {
       alert(`❌ Review ${reviewId} has been rejected.`);
     } else if (action === "flag") {
-      alert(` Review ${reviewId} has been flagged for review.`);
+      alert(`Review ${reviewId} has been flagged for review.`);
     }
   };
 
@@ -119,16 +120,14 @@ const Review = () => {
       <div className="w-11/12">
         {/* Header Section */}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-[#191919]">
-            REVIEWS/FEEDBACK
-          </h1>
+          <h1 className="text-2xl font-bold text-[#191919]">REVIEWS/FEEDBACK</h1>
 
           {/* Export as CSV Button */}
           <button
             onClick={handleExport}
             className="flex items-center gap-2 text-sm cursor-pointer"
           >
-            <FaDownload className="text-black" />
+            <Download className="text-black" size={16} />
             Export as CSV Format
           </button>
         </div>
@@ -136,7 +135,7 @@ const Review = () => {
         {/* Search Bar */}
         <div className="relative mb-6 w-1/3">
           <div>
-            <h2 className="text-[#191919]">Search by Name</h2>
+            <h2 className="text-[#191919]">Search by Expert</h2>
           </div>
           <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
             <Search className="m-1 text-white" size={16} />
@@ -145,8 +144,7 @@ const Review = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="p-2 rounded-xl border border-gray-300 w-72 bg-gray-100 text-gray-700 focus:outline-none pl-10"
-            placeholder="Search by Name"
+            className="p-2 rounded-xl border border-black w-72 bg-[#E6E6E6] text-gray-700 focus:outline-none pl-10"
           />
         </div>
 
@@ -176,23 +174,23 @@ const Review = () => {
                     {/* Approve Button */}
                     <button
                       onClick={() => handleAction("approve", review.reviewId)}
-                      className="bg-green-500 text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
+                      className="bg-[#60DF7C] text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
                     >
-                      ✔️
+                      <CheckCircle size={18} />
                     </button>
                     {/* Reject Button */}
                     <button
                       onClick={() => handleAction("reject", review.reviewId)}
-                      className="bg-red-500 text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
+                      className="bg-[#FF2A2A] text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
                     >
-                      ✖️
+                      <XCircle size={18} />
                     </button>
                     {/* Flag Button */}
                     <button
                       onClick={() => handleAction("flag", review.reviewId)}
                       className="bg-black text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
                     >
-                      <FaRegFlag />
+                      <Flag size={18} />
                     </button>
                   </td>
                 </tr>

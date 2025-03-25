@@ -15,7 +15,8 @@ const Experts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
-  const [selectedLastActive, setSelectedLastActive] = useState("All Time");
+  const [selectedSessions, setSelectedSessions] = useState("All");
+  const [selectedUsername, setSelectedUsername] = useState("");
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -49,19 +50,26 @@ const Experts = () => {
   useEffect(() => {
     let tempExperts = [...experts];
 
+    // Filter by country
     if (selectedCountry !== "All") {
       tempExperts = tempExperts.filter((expert) => expert.country === selectedCountry);
     }
 
-    if (searchQuery) {
+    // Filter by number of live sessions
+    if (selectedSessions !== "All") {
+      tempExperts = tempExperts.filter((expert) => expert.liveSessions === parseInt(selectedSessions));
+    }
+
+    // Filter by username
+    if (selectedUsername) {
       tempExperts = tempExperts.filter((expert) =>
-        expert.country.toLowerCase().includes(searchQuery.toLowerCase())
+        expert.username.toLowerCase().includes(selectedUsername.toLowerCase())
       );
     }
 
     setFilteredExperts(tempExperts);
     setCurrentPage(1);
-  }, [selectedCountry, searchQuery, experts]);
+  }, [selectedCountry, selectedSessions, selectedUsername, experts]);
 
   const sortTable = (key) => {
     let direction = "asc";
@@ -100,41 +108,52 @@ const Experts = () => {
 
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-4">
+            {/* Select by Country */}
             <div>
-              <h3 className="mb-2">Select Country</h3>
+              <h3 className="mb-2">Select by Country</h3>
               <select
                 className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
               >
                 {countries.map((country, index) => (
-                  <option key={index} value={country}>{country}</option>
+                  <option key={index} value={country}>
+                    {country}
+                  </option>
                 ))}
               </select>
             </div>
 
+            {/* Select by No. of Live Sessions */}
             <div>
-              <h3 className="mb-2">Select by Last Active</h3>
+              <h3 className="mb-2">Select by No. of Live Sessions</h3>
               <select
                 className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
-                value={selectedLastActive}
-                onChange={(e) => setSelectedLastActive(e.target.value)}
+                value={selectedSessions}
+                onChange={(e) => setSelectedSessions(e.target.value)}
               >
-                <option value="All Time">All Time</option>
-                <option value="Last 15 Days">Last 15 Days</option>
-                <option value="Last 30 Days">Last 30 Days</option>
+                <option value="All">All</option>
+                {[...Array(11).keys()].map((num) => (
+                  <option key={num} value={num}>
+                    {num} Sessions
+                  </option>
+                ))}
               </select>
             </div>
 
-            <div className="relative w-64">
-              <h3>Select by Country</h3>
-              <Search className="absolute left-3 bottom-3 transform text-gray-200 bg-red-500 rounded-full border border-red-500" size={18} />
-              <input
-                type="text"
-                className="mt-2 p-2 pl-10 rounded-lg border border-black bg-gray-200 w-48"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            {/* Select by Username */}
+            <div>
+              <h3>Select by Username</h3>
+              <div className="relative w-64">
+                <Search className="absolute left-3 bottom-3 transform text-gray-200 bg-red-500 rounded-full border border-red-500" size={18} />
+                <input
+                  type="text"
+                  className="mt-2 p-2 pl-10 rounded-lg border border-black bg-gray-200 w-48"
+                  value={selectedUsername}
+                  onChange={(e) => setSelectedUsername(e.target.value)}
+                  placeholder="Search Username"
+                />
+              </div>
             </div>
           </div>
 
