@@ -1,194 +1,322 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation"; // For redirect
 import { Search } from "lucide-react";
-import { RiArrowDropDownLine } from "react-icons/ri";
-import { FiDownload } from "react-icons/fi";
+import { FaDownload } from "react-icons/fa";
+import { FaSortUp, FaSortDown } from "react-icons/fa";
+
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdArrowUpward, MdArrowDownward } from "react-icons/md";
 
 const PaymentFinance = () => {
-  // State for active session type (Action Session or Session History)
-  const [statusFilter, setStatusFilter] = useState("All Status");
   const [searchQuery, setSearchQuery] = useState("");
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const reviewsPerPage = 6;
+  const router = useRouter(); // Use Next.js router for navigation
 
-  // Dummy session data (matching the new structure)
+  // Dummy session data
   const dummySessions = [
     {
-      sessionId: "#01",
-      user: "Ivan",
-      amount: "$100",
-      method: "Credit Card",
-      status: "Completed",
+      sessionId: "A3J933",
+      userExpert: "raihan",
+      amount: "$50",
+      method: "PayPal",
+      status: "Complete",
     },
     {
-      sessionId: "#02",
-      user: "Sarah",
-      amount: "$150",
+      sessionId: "A3J934",
+      userExpert: "john",
+      amount: "$75",
+      method: "Stripe",
+      status: "Pending",
+    },
+    {
+      sessionId: "A3J935",
+      userExpert: "alex",
+      amount: "$40",
+      method: "Payoneer",
+      status: "Ongoing",
+    },
+    {
+      sessionId: "A3J936",
+      userExpert: "raihan",
+      amount: "$60",
+      method: "Bank Transfer",
+      status: "Complete",
+    },
+    {
+      sessionId: "A3J937",
+      userExpert: "michael",
+      amount: "$90",
       method: "PayPal",
       status: "Pending",
     },
     {
-      sessionId: "#03",
-      user: "Mike",
-      amount: "$120",
-      method: "Debit Card",
-      status: "Completed",
+      sessionId: "A3J938",
+      userExpert: "sara",
+      amount: "$30",
+      method: "Stripe",
+      status: "Ongoing",
     },
     {
-      sessionId: "#04",
-      user: "John",
+      sessionId: "A3J939",
+      userExpert: "alex",
+      amount: "$45",
+      method: "Bank Transfer",
+      status: "Complete",
+    },
+    {
+      sessionId: "A3J940",
+      userExpert: "raihan",
       amount: "$80",
-      method: "Wire Transfer",
+      method: "PayPal",
       status: "Pending",
-    },
-    {
-      sessionId: "#05",
-      user: "Emma",
-      amount: "$200",
-      method: "Credit Card",
-      status: "Completed",
     },
   ];
 
-  // Filter sessions based on status
-  const filteredSessions = dummySessions.filter((session) => {
-    if (statusFilter === "All Status") return true;
-    return session.status === statusFilter;
+  // Sort sessions based on selected column
+  const sortedSessions = [...dummySessions].sort((a, b) => {
+    if (sortConfig.key) {
+      const valueA = a[sortConfig.key];
+      const valueB = b[sortConfig.key];
+      if (valueA < valueB) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+    }
+    return 0;
   });
 
-  // Handle status selection and close dropdown
-  const handleStatusSelect = (status) => {
-    setStatusFilter(status);
-    setDropdownVisible(false);
+  // Filter sessions based on search query and status
+  const filteredSessions = sortedSessions.filter(
+    (session) =>
+      session.sessionId.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (statusFilter === "All" || session.status === statusFilter)
+  );
+
+  // Handle button click for CSV Export
+  const handleExport = () => {
+    router.push("/export-page"); // Redirect to /export-page
+  };
+
+  // Pagination logic
+  const indexOfLastSession = currentPage * reviewsPerPage;
+  const indexOfFirstSession = indexOfLastSession - reviewsPerPage;
+  const currentSessions = filteredSessions.slice(
+    indexOfFirstSession,
+    indexOfLastSession
+  );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Handle sorting
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
   };
 
   return (
-    <div className="flex justify-center w-full p-6 bg-white -mt-">
+    <div className="flex justify-center w-full p-6 bg-white ">
       <div className="w-11/12">
-        <h1 className="text-2xl font-bold mb-4 text-[#191919]">
-          PAYMENTS AND FINANCE
-        </h1>
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-[#191919]">
+            PAYMENTS AND FINANCE
+          </h1>
+        </div>
 
-        {/* Search Bar, Status Dropdown, and Export Button in Same Line */}
-        <div className="flex items-center justify-between space-x-4 mb-6">
-          {/* Search Bar */}
-          <div className="relative w-1/3">
-            <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
-              <Search className="m-1 text-white" size={16} />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-2 rounded-xl border border-gray-300 w-full bg-gray-100 text-gray-700 focus:outline-none pl-10"
-              placeholder="Search by Session"
-            />
-          </div>
-
-          {/* Status Dropdown */}
-          <div className="relative w-1/3">
-            <button
-              onClick={() => setDropdownVisible(!dropdownVisible)}
-              className="p-2 rounded-xl w-full border text-[#191919] flex items-center justify-between focus:outline-none"
-            >
-              {statusFilter}
-              <RiArrowDropDownLine size={24} />
-            </button>
-
-            {dropdownVisible && (
-              <div className="absolute bg-white border border-gray-300 w-full mt-2 rounded-lg shadow-lg z-10">
-                <button
-                  onClick={() => handleStatusSelect("All Status")}
-                  className="px-4 py-2 text-sm w-full text-left hover:bg-gray-100"
-                >
-                  All Status
-                </button>
-                <button
-                  onClick={() => handleStatusSelect("Completed")}
-                  className="px-4 py-2 text-sm w-full text-left hover:bg-gray-100"
-                >
-                  Completed
-                </button>
-                <button
-                  onClick={() => handleStatusSelect("Pending")}
-                  className="px-4 py-2 text-sm w-full text-left hover:bg-gray-100"
-                >
-                  Pending
-                </button>
+        {/* Search & Filter Section */}
+        <div className="flex justify-between items-center mb-6">
+          {/* Search Bar + Status Filter */}
+          <div className="flex gap-4 items-end">
+            {/* Search Bar */}
+            <div className="relative w-72">
+              <h2 className="text-[#191919] mb-1">Search by Session ID</h2>
+              <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
+                <Search className="m-1 text-white" size={16} />
               </div>
-            )}
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="p-2 rounded-xl border border-gray-300 w-full bg-gray-100 text-gray-700 focus:outline-none pl-10"
+                placeholder="Search by Session ID"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="w-48">
+              <h2 className="text-[#191919] mb-1">Filter by Status</h2>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="p-2 w-full rounded-xs border border-gray-300 bg-white text-gray-700 focus:outline-none"
+              >
+                <option value="All">All Status</option>
+                <option value="Complete">Complete</option>
+                <option value="Pending">Pending</option>
+                <option value="Ongoing">Ongoing</option>
+              </select>
+            </div>
           </div>
 
           {/* Export as CSV Button */}
-          <button className="text-red-500 flex items-center gap-2 hover:underline cursor-pointer">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 text-red-500 text-lg font-medium cursor-pointer -mt-10 "
+          >
             Export as CSV Format
-            <FiDownload className="text-black" />
+            <div className="bg-black p-1 rounded-xs">
+              <FaDownload className="text-white rounded-xl" />
+            </div>
           </button>
         </div>
 
-        {/* Data Table with Increased Height and Row Gap */}
-        <div className="overflow-y-auto max-h-screen  border-gray-300 rounded-lg mt-10">
-          <table className="w-full border-collapse">
-            <thead className="border-y-1 border-[#FA9E93] bg-gray-100 ">
-              <tr>
-                <th className="p-5 text-center ">SESSION ID</th>
-                <th className="p-5 text-center">USER/EXPERT</th>
-                <th className="p-5 text-center">AMOUNT</th>
-                <th className="p-5 text-center">METHOD</th>
-                <th className="p-5 text-center">STATUS</th>
-                <th className="p-5 text-center">ACTION</th>
-              </tr>
-            </thead>
-            <tbody className="space-y-10">
-              {filteredSessions.map((session, index) => (
+        {/* Data Table */}
+        <table className="w-full mx-10 mt-13">
+        <thead className="bg-white border-y-2 border-[#FA9E93]">
+  <tr>
+    {[
+      { key: "sessionId", label: "SESSION ID" },
+      { key: "userExpert", label: "USER/EXPERT" },
+      { key: "amount", label: "AMOUNT" },
+      { key: "method", label: "METHOD" },
+      { key: "status", label: "STATUS" },
+    ].map((column, index, array) => (
+      <th
+        key={column.key}
+        onClick={() => requestSort(column.key)}
+        className={`p-3 text-center cursor-pointer ${
+          index !== array.length - 1 ? "border-r-2 border-gray-300" : ""
+        }`}
+      >
+        <div className="flex justify-center items-center gap-1">
+          <span>{column.label}</span>
+          <div className="flex flex-col items-center">
+            {sortConfig.key === column.key ? (
+              sortConfig.direction === "asc" ? (
+                <>
+                  <FaSortUp className="text-[#EC6453] -mb-1" />
+                  <FaSortDown className="text-gray-300" />
+                </>
+              ) : (
+                <>
+                  <FaSortUp className="text-gray-300 -mb-1" />
+                  <FaSortDown className="text-[#EC6453]" />
+                </>
+              )
+            ) : (
+              <>
+                <FaSortUp className="text-gray-300 -mb-1" />
+                <FaSortDown className="text-gray-300" />
+              </>
+            )}
+          </div>
+        </div>
+      </th>
+    ))}
+    {/* ✅ Add border to the ACTIONS column */}
+    <th className="p-3 text-center border-l-2 border-gray-300">ACTIONS</th>
+  </tr>
+</thead>
+
+
+
+          <tbody>
+            {currentSessions.length > 0 ? (
+              currentSessions.map((session, index) => (
                 <tr
                   key={index}
-                  className="hover:bg-gray-100 text-center border-b border-gray-300"
+                  className="hover:bg-gray-100 border-b border-gray-200"
                 >
-                  <td className="p-5">{session.sessionId}</td>
-                  <td className="p-5">{session.user}</td>
-                  <td className="p-5">{session.amount}</td>
-                  <td className="p-5">{session.method}</td>
-                  <td className="p-5">
-                    <span
-                      className={`text-white px-2 py-1 rounded-full ${
-                        session.status === "Completed"
-                          ? "bg-green-500"
-                          : "bg-yellow-500"
-                      }`}
+                  <td className="p-3 text-center">{session.sessionId}</td>
+                  <td className="p-3 text-center">{session.userExpert}</td>
+                  <td className="p-3 text-center">{session.amount}</td>
+                  <td className="p-3 text-center">{session.method}</td>
+                  <td className="p-3 text-center">
+                    <div
+                      className={`inline-block px-3 py-1 rounded-lg text-white font-semibold ${session.status === "Complete"
+                        ? "bg-green-500"
+                        : session.status === "Pending"
+                          ? "bg-yellow-500"
+                          : "bg-blue-500"
+                        }`}
                     >
                       {session.status}
-                    </span>
+                    </div>
                   </td>
-                  <td className="p-4">
-                    <input type="checkbox" />
+                  <td className="p-3 flex justify-center items-center gap-3">
+                    <input
+                      type="checkbox"
+                      title="Approve"
+                      className="w-5 h-5 cursor-pointer"
+                    />
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="p-3 text-center text-gray-500">
+                  No sessions found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
         {/* Total Count */}
-        <div className="text-center text-red-500 mt-3 -ml-20">
-          {filteredSessions.length} Total
-        </div>
-        {/* Pagination inside Rectangle Panel */}
-        <div className="flex justify-center items-center  p-4 border border-gray-300 rounded-lg bg-gray-50 w-[300px] mx-88">
-        <button className="text-red-500">&lt;</button>
-
-          <button className="p-2 border bg-white text-[#191919] mx-1 w-8 h-8 flex items-center justify-center rounded-lg">
-            1
-          </button>
-          <button className="p-2 border bg-white text-[#191919] mx-1 w-8 h-8 flex items-center justify-center rounded-lg">
-            2
-          </button>
-          <button className="p-2 border bg-white text-[#191919] mx-1 w-8 h-8 flex items-center justify-center rounded-lg">
-            3
-          </button>
-          <button className="text-red-500">&gt;</button>
+        <div className="text-center text-sm mt-4 text-[#FA9E93]">
+          {filteredSessions.length} {filteredSessions.length === 1 ? "Result" : "Total"}
         </div>
 
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-4">
+          <div className="flex gap-6 p-2 border rounded-lg bg-white">
+            <button
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-300 cursor-not-allowed" : "text-red-500"
+                }`}
+            >
+              <MdKeyboardArrowLeft size={20} />
+            </button>
+
+            {[...Array(Math.ceil(filteredSessions.length / reviewsPerPage)).keys()].map(
+              (number) => (
+                <button
+                  key={number + 1}
+                  onClick={() => paginate(number + 1)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-base ${currentPage === number + 1
+                    ? "bg-red-500 text-white"
+                    : "text-[#FA9E93] bg-white"
+                    }`}
+                >
+                  {number + 1}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={
+                currentPage === Math.ceil(filteredSessions.length / reviewsPerPage)
+              }
+              className={`p-2 rounded-lg ${currentPage === Math.ceil(filteredSessions.length / reviewsPerPage)
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <MdKeyboardArrowRight size={20} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
