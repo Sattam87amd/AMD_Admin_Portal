@@ -9,8 +9,8 @@ import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 const Withdrawal = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("All");
+  const [experts, setExperts] = useState([]); // Store expert names
+  const [selectedExpert, setSelectedExpert] = useState("All");
   const [lastActive, setLastActive] = useState("All Time");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -39,43 +39,29 @@ const Withdrawal = () => {
     { transactionId: "B434-051", expert: "Olivia", amount: "$800", date: "10/2/2025", status: "Not withdrawn", country: "Russia" },
     { transactionId: "B434-052", expert: "Noah", amount: "$900", date: "5/2/2025", status: "COMPLETED", country: "South Korea" },
     { transactionId: "B434-053", expert: "Sophia", amount: "$1500", date: "10/3/2025", status: "PENDING", country: "Canada" },
-{ transactionId: "B434-054", expert: "Liam", amount: "$1200", date: "18/3/2025", status: "ONGOING", country: "Germany" },
-{ transactionId: "B434-055", expert: "Emma", amount: "$800", date: "25/3/2025", status: "COMPLETED", country: "Australia" }
-
+    { transactionId: "B434-054", expert: "Liam", amount: "$1200", date: "18/3/2025", status: "ONGOING", country: "Germany" },
+    { transactionId: "B434-055", expert: "Emma", amount: "$800", date: "25/3/2025", status: "COMPLETED", country: "Australia" },
   ];
 
   useEffect(() => {
     setTransactions(dummyTransactions);
     setFilteredTransactions(dummyTransactions);
 
-    const fetchCountries = async () => {
-      try {
-        const res = await fetch("https://restcountries.com/v3.1/all");
-        const data = await res.json();
-        const countryList = data.map((country) => ({
-          name: country.name.common,
-          flag: country.flags.png,
-        }));
-        countryList.sort((a, b) => a.name.localeCompare(b.name));
-        setCountries(countryList);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
-      }
-    };
-
-    fetchCountries();
+    // Extract unique expert names
+    const expertNames = [...new Set(dummyTransactions.map(txn => txn.expert))];
+    setExperts(expertNames);
   }, []);
 
   useEffect(() => {
     let filtered = transactions;
 
-    if (selectedCountry !== "All") {
-      filtered = filtered.filter((txn) => txn.country === selectedCountry);
+    if (selectedExpert !== "All") {
+      filtered = filtered.filter((txn) => txn.expert === selectedExpert);
     }
 
     if (searchQuery) {
       filtered = filtered.filter((txn) =>
-        txn.country.toLowerCase().includes(searchQuery.toLowerCase())
+        txn.transactionId.toLowerCase().includes(searchQuery.toLowerCase()) // Search by Transaction ID
       );
     }
 
@@ -109,7 +95,7 @@ const Withdrawal = () => {
 
     setFilteredTransactions(filtered);
     setCurrentPage(1);
-  }, [searchQuery, selectedCountry, lastActive, transactions]);
+  }, [searchQuery, selectedExpert, lastActive, transactions]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -151,18 +137,10 @@ const Withdrawal = () => {
     return (
       <div className="flex flex-col ml-1">
         <IoMdArrowDropup
-          className={`w-3 h-3 ${
-            sortConfig.key === key && sortConfig.direction === "asc"
-              ? "text-red-500"
-              : "text-gray-400"
-          }`}
+          className={`w-3 h-3 ${sortConfig.key === key && sortConfig.direction === "asc" ? "text-red-500" : "text-gray-400"}`}
         />
         <IoMdArrowDropdown
-          className={`w-3 h-3 ${
-            sortConfig.key === key && sortConfig.direction === "desc"
-              ? "text-red-500"
-              : "text-gray-400"
-          }`}
+          className={`w-3 h-3 ${sortConfig.key === key && sortConfig.direction === "desc" ? "text-red-500" : "text-gray-400"}`}
         />
       </div>
     );
@@ -179,13 +157,13 @@ const Withdrawal = () => {
             <p className="mb-1 text-md text-[#191919]">Select Expert</p>
             <select
               className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-44 text-red-500"
-              value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
+              value={selectedExpert}
+              onChange={(e) => setSelectedExpert(e.target.value)}
             >
               <option value="All">All</option>
-              {countries.map((country) => (
-                <option key={country.name} value={country.name}>
-                  {country.name}
+              {experts.map((expert) => (
+                <option key={expert} value={expert}>
+                  {expert}
                 </option>
               ))}
             </select>
@@ -210,12 +188,11 @@ const Withdrawal = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select by Transaction ID</p>
+            <p className="mb-1 text-md text-[#191919]">Search by Transaction ID</p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-400" size={16} />
               <input
                 type="text"
-
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-48 pl-10"
@@ -228,7 +205,6 @@ const Withdrawal = () => {
             className="w-full sm:w-auto ml-auto p-2 bg-black text-white rounded flex items-center justify-center gap-2"
           >
             <Download size={16} />
-            
           </button>
         </div>
 
@@ -302,42 +278,45 @@ const Withdrawal = () => {
           </table>
         </div>
 
-{/* Pagination Section */}
-<div className="flex justify-center items-center mt-4 gap-2">
-  <div className="border shadow-lg rounded-lg">
-    {/* Left Arrow */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className="px-4 py-2 rounded  text-gray-700 disabled:opacity-50"
-  >
-    <FaChevronLeft />
-  </button>
+        {/* Total Transactions Display */}
+        <div className="flex justify-center font-bold items-center mt-4">
+          <p className="text-md justify-center text-[#C91416]">{filteredTransactions.length} Total </p>
+        </div>
 
-  {/* Page Numbers */}
-  {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
-    <button
-      key={i}
-      onClick={() => paginate(i + 1)}
-      className={`px-4 py-2 rounded ${currentPage === i + 1 ? "bg-red-500 text-white" : "bg-white"}`}
-    >
-      {i + 1}
-    </button>
-  ))}
+        {/* Pagination Section */}
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <div className="border shadow-lg rounded-lg">
+            {/* Left Arrow */}
+            <button
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded  text-gray-700 disabled:opacity-50"
+            >
+              <FaChevronLeft />
+            </button>
 
-  {/* Right Arrow */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
-    className="px-4 py-2 rounded text-gray-700 disabled:opacity-50"
-  >
-    <FaChevronRight />
-  </button>
-  </div>
+            {/* Page Numbers */}
+            {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => paginate(i + 1)}
+                className={`px-4 py-2 rounded ${currentPage === i + 1 ? "bg-red-500 text-white" : "bg-white"}`}
+              >
+                {i + 1}
+              </button>
+            ))}
 
-
+            {/* Right Arrow */}
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
+              className="px-4 py-2 rounded text-gray-700 disabled:opacity-50"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
