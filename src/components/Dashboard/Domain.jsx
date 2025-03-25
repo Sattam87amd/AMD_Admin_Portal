@@ -45,19 +45,18 @@ const domainStats = [
 const Domain = () => {
   return (
     <div>
-      {/* Divider */}
-      <div className="h-0.5 w-[80rem] bg-gray-300 mx-64"></div>
+       <div className="h-0.5 w-[76rem] bg-gray-300 mt-10 ml-5"></div>
 
       {/* Main Container */}
-      <div className="w-[68.75rem] mx-[18.75rem] my-10 rounded-lg p-8">
+      <div className="w-[68.75rem] mx-[3rem] my-10 rounded-lg p-8">
         {/* Header Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold -ml-16">
             Domain-wise Experts Popularity among Users
           </h2>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8 -mx-16">
+        <div className="flex flex-col md:flex-row gap-8">
           {/* LEFT SIDE: Pie Chart */}
           <div className="md:w-1/2 w-full flex flex-col items-center ">
             <PieChart width={650} height={500}>
@@ -65,10 +64,10 @@ const Domain = () => {
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50} // Increased to fill inside more
+                innerRadius={0} // Increased to fill inside more
                 outerRadius={160} // Increased to fill the space
                 fill="#8884d8"
-                paddingAngle={3}
+                paddingAngle={0}
                 dataKey="value"
                 label={({ index }) => chartData[index]?.domain} // Show domain names
               >

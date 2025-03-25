@@ -15,26 +15,25 @@ const data = [
 const UserCountryGraph = () => {
   return (
     <div>
-      {/* Divider Line */}
-      <div className="h-0.5 w-[80rem] bg-gray-300 mx-64"></div>
-
-      <div className="w-full flex flex-col items-center my-10 space-y-6">
+    <div className="h-0.5 w-[76rem] bg-gray-300 ml-6 "></div>
+      
+      <div className="w-full flex flex-col items-center my-10 space-y-6 -mx-60">
         {/* Title */}
-        <h2 className="text-2xl font-semibold mb-4 mr-[50%]">Users Per Country</h2>
+        <h2 className="text-2xl font-semibold mb-4 mr-[41%]">Users Per Country</h2>
 
         {/* Main Graph and Stats Container */}
         <div className="flex flex-col items-center gap-8 w-[68.75rem] mx-auto">
           {/* Graph Section */}
-          <div className="flex justify-center">
+          <div className="flex justify-center ml-20">
             <PieChart width={600} height={300}>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={30} // Reduced to make it more filled inside
+                innerRadius={0} // Reduced to make it more filled inside
                 outerRadius={120}
                 fill="#8884d8"
-                paddingAngle={3}
+                paddingAngle={0}
                 dataKey="value"
                 label={({ index }) => data[index]?.country} // Show country names
               >
@@ -47,7 +46,7 @@ const UserCountryGraph = () => {
           </div>
 
           {/* Stats Section - 6 Divs */}
-          <div className="grid grid-cols-3 gap-6 w-full -mr-64">
+          <div className="grid grid-cols-3 gap-6 w-full ml-[24rem]">
             {data.map((item) => (
               <div
                 key={item.country}
@@ -69,7 +68,8 @@ const UserCountryGraph = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+   
   );
 };
 

@@ -6,8 +6,6 @@ import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
 
-
-
 import React from 'react'
 
 const Page = () => {
@@ -17,29 +15,29 @@ const Page = () => {
       <Navbar />
       
       {/* Main Content Area */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative"> {/* Added 'relative' to ensure position for the divider */}
+        
         {/* Sidebar (Left) */}
-        <div className="hidden lg:block w-64">
+        <div className="hidden lg:block w-64 left-[230px]">
           <AdminSidebar />
         </div>
 
-        {/* Red Divider (optional) */}
-        <div className="hidden lg:block w-1 bg-red-600 " />
+        {/* Red Divider */}
+        <div className="absolute left-[262px] top-0 w-1 bg-red-600 h-[171.4rem] z-10"></div> {/* Explicitly position the divider */}
 
         {/* Main Content (Right) */}
-       <LatestRegistration/>
-       
+        <div className="flex-1 pl-2">
+          <LatestRegistration />
+          <Domain />
+          <UserGraph />
+          <UserCountryGraph />
+        </div>
       </div>
-          
-       <Domain/>
-       <UserGraph/>
-       <UserCountryGraph/>
-       
-        
 
-          <Footer />
+       <div className='w-[76.2rem] ml-[17rem]'>  
+      <Footer />
+      </div>
       {/* Footer at Bottom */}
-      
     </div>
   )
 }
