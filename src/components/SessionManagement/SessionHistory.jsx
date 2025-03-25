@@ -129,6 +129,7 @@ const SessionHistory = () => {
             onClick={() => setActiveSession("Action Session")}
             className={`py-2 px-6 ${activeSession === "Action Session" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
           ><Link href="/sessionmanagement">
+            Action Session 
             </Link>
           </button>
           
