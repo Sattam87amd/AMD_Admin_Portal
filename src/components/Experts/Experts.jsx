@@ -13,7 +13,7 @@ const Experts = () => {
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 4;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
   const [selectedLastActive, setSelectedLastActive] = useState("All Time");
 
@@ -96,7 +96,7 @@ const Experts = () => {
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
-        <h1 className="text-3xl font-bold mb-6 text-[#191919]">PENDING EXPERT REQUESTS</h1>
+        <h1 className="text-3xl font-bold mb-6 text-[#191919]">EXPERTS</h1>
 
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-4">
@@ -147,8 +147,8 @@ const Experts = () => {
         </div>
 
         {/* Table */}
-        <table className="w-full border-collapse border border-gray-300">
-          <thead className="border-y-2 border-red-400 bg-gray-100">
+        <table className="w-[104%] border-collapse border border-white">
+          <thead className="border-y-2 border-red-400 bg-white">
             <tr>
               {["COUNTRY NAME", "NAME", "USERNAME", "EMAIL", "PHONE NUMBER", "COMPLETES LIVESESSIONS"].map((label, index) => (
                 <th key={index} className="p-3 text-left font-semibold cursor-pointer">
@@ -167,12 +167,12 @@ const Experts = () => {
           <tbody>
             {currentItems.map((expert, index) => (
               <tr key={index} className="hover:bg-gray-50 border-b border-gray-200">
-                <td className="p-3 text-left">{expert.country}</td>
-                <td className="text-left">{expert.name}</td>
-                <td className="text-left">{expert.username}</td>
-                <td className="text-left">{expert.email}</td>
-                <td className="text-left">{expert.phone}</td>
-                <td className="text-left">{String(expert.liveSessions).padStart(2, "0")}</td>
+                <td className="p-3 text-center">{expert.country}</td>
+                <td className="text-center">{expert.name}</td>
+                <td className="text-center">{expert.username}</td>
+                <td className="text-center">{expert.email}</td>
+                <td className="text-center">{expert.phone}</td>
+                <td className="text-center">{String(expert.liveSessions).padStart(2, "0")}</td>
               </tr>
             ))}
           </tbody>

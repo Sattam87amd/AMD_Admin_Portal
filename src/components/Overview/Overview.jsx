@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
-import { FaDownload, FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { Download, Search } from "lucide-react";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { FaSortUp, FaSortDown } from "react-icons/fa";
+import { utils, writeFile } from "xlsx";
 
 import {
   MdKeyboardArrowLeft,
@@ -40,6 +41,8 @@ const GraphComponent = () => {
       },
     ],
   };
+
+  
 
   const amdData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
@@ -219,6 +222,28 @@ const Overview = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const downloadExcel = () => {
+    // Prepare the data to be exported
+    const exportData = filteredSessions.map((session) => ({
+      transactionId: session.transactionId,
+      expert: session.expert,
+      amount: session.amount,
+      status: session.status,
+      date: session.date,
+    }));
+  
+    // Convert the data to a worksheet
+    const ws = utils.json_to_sheet(exportData);
+    const wb = utils.book_new();
+    
+    // Append the worksheet to the workbook
+    utils.book_append_sheet(wb, ws, "PendingSessions");
+  
+    // Write the workbook to a file
+    writeFile(wb, "PendingSessions.xlsx");
+  };
+  
+
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
@@ -275,48 +300,50 @@ const Overview = () => {
             </div>
           </div>
 
-          {/* Export Button */}
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 text-red-500 text-sm cursor-pointer mt-5"
+          <button 
+            onClick={downloadExcel} 
+            className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg"
           >
-            <div className="bg-black p-2 rounded-lg">
-              <FaDownload className="text-white" />
-            </div>
+            <Download size={24} className="text-white" />
           </button>
         </div>
 
-{/* Table */}
-<table className="w-full">
-  <thead className="bg-white border-y-2 border-[#FA9E93]">
-    <tr>
-      {[
-        { label: "TRANSACTION ID", column: "transactionId", isCloser: true },
-        { label: "EXPERT", column: "expert", isCloser: false },
-        { label: "AMOUNT", column: "amount", isCloser: false },
-        { label: "STATUS", column: "status", isCloser: false },
-        { label: "DATE", column: "date", isCloser: false },
-      ].map(({ label, column, isCloser }, index) => (
-        <th
-          key={column}
-          className={`p-3 text-center cursor-pointer ${index !== 0 ? "border-l border-gray-500" : ""}`}
-          onClick={() => handleSort(column)}
-        >
-          <div className={`flex justify-center items-center ${isCloser ? "gap-2" : "gap-5"}`}>
-            {label}
-            <div className="flex flex-col">
-              <FaSortUp
-                className={`text-sm ${sortColumn === column && sortOrder === "asc" ? "text-black" : "text-black"}`}
-              />
-              <FaSortDown
-                className={`text-sm ${sortColumn === column && sortOrder === "desc" ? "text-black" : "text-black"}`}
-              />
-            </div>
+        <table className="w-full">
+        <thead className="bg-white border-y-2 border-red-500">
+  <tr className="border-t border-b border-red-500"> 
+    {[
+      { label: "TRANSACTION ID", column: "transactionId", isCloser: true },
+      { label: "EXPERT", column: "expert", isCloser: false },
+      { label: "AMOUNT", column: "amount", isCloser: false },
+      { label: "STATUS", column: "status", isCloser: false },
+      { label: "DATE", column: "date", isCloser: false },
+    ].map(({ label, column, isCloser }, index) => (
+      <th
+        key={column}
+        className={`p-3 text-center cursor-pointer 
+          ${index !== 0 ? "border-l border-gray-500" : ""} 
+          ${index !== 0 ? "py-4" : "py-3"} 
+          border-t border-b
+          ${index !== 0 ? "mt-2" : ""} // Adding margin-top to avoid closeness to the red border
+        `}
+        onClick={() => handleSort(column)}
+      >
+        <div className={`flex justify-center items-center ${isCloser ? "gap-2" : "gap-5"}`}>
+          {label}
+          <div className="flex flex-col">
+            <FaSortUp
+              className={`text-sm ${sortColumn === column && sortOrder === "asc" ? "text-black" : "text-black"}`}
+            />
+            <FaSortDown
+              className={`text-sm ${sortColumn === column && sortOrder === "desc" ? "text-black" : "text-black"}`}
+            />
           </div>
-        </th>
-      ))}
-    </tr>
-  </thead>
+        </div>
+      </th>
+    ))}
+  </tr>
+</thead>
+
 
 
 

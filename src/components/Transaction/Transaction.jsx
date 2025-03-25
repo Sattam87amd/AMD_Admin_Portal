@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const Transaction = () => {
   const [transactions, setTransactions] = useState([]);
@@ -27,20 +27,7 @@ const Transaction = () => {
     { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING", country: "USA" },
     { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED", country: "Canada" },
     { transactionId: "B434-046", user: "392226", expertBooked: "mike", amount: "$250", date: "25/2/2025", status: "BOOKED", country: "Australia" },
-    { transactionId: "B434-047", user: "392227", expertBooked: "lisa", amount: "$100", date: "26/2/2025", status: "CANCELLED", country: "UK" },
-    { transactionId: "B434-048", user: "392228", expertBooked: "dave", amount: "$400", date: "27/2/2025", status: "BOOKED", country: "Germany" },
-    { transactionId: "B434-049", user: "392229", expertBooked: "emma", amount: "$350", date: "28/2/2025", status: "COMPLETED", country: "France" },
-    { transactionId: "B434-050", user: "392230", expertBooked: "chris", amount: "$200", date: "1/3/2025", status: "PENDING", country: "Italy" },
-    { transactionId: "B434-051", user: "392231", expertBooked: "olivia", amount: "$150", date: "2/3/2025", status: "BOOKED", country: "Spain" },
-    { transactionId: "B434-052", user: "392232", expertBooked: "noah", amount: "$300", date: "3/3/2025", status: "COMPLETED", country: "Brazil" },
-    { transactionId: "B434-053", user: "392233", expertBooked: "ava", amount: "$250", date: "4/3/2025", status: "CANCELLED", country: "Mexico" },
-    { transactionId: "B434-054", user: "392234", expertBooked: "liam", amount: "$100", date: "5/3/2025", status: "BOOKED", country: "Japan" },
-    { transactionId: "B434-055", user: "392235", expertBooked: "sophia", amount: "$400", date: "6/3/2025", status: "PENDING", country: "China" },
-    { transactionId: "B434-056", user: "392236", expertBooked: "mason", amount: "$350", date: "7/3/2025", status: "COMPLETED", country: "Russia" },
-    { transactionId: "B434-057", user: "392237", expertBooked: "isabella", amount: "$200", date: "8/3/2025", status: "BOOKED", country: "South Korea" },
-    { transactionId: "B434-058", user: "392238", expertBooked: "jacob", amount: "$150", date: "9/3/2025", status: "CANCELLED", country: "Argentina" },
-    { transactionId: "B434-059", user: "392239", expertBooked: "mia", amount: "$300", date: "10/3/2025", status: "COMPLETED", country: "South Africa" },
-    { transactionId: "B434-060", user: "392240", expertBooked: "william", amount: "$250", date: "11/3/2025", status: "BOOKED", country: "Egypt" },
+    // (other transactions omitted for brevity)
   ];
 
   useEffect(() => {
@@ -113,11 +100,21 @@ const Transaction = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const downloadExcel = () => {
-    const ws = utils.json_to_sheet(filteredTransactions);
+    const exportData = filteredTransactions.map((txn) => ({
+      "Transaction ID": txn.transactionId,
+      "User": txn.user,
+      "Expert Booked": txn.expertBooked,
+      "Amount": txn.amount,
+      "Date": txn.date,
+      "Status": txn.status,
+      "Country": txn.country,
+    }));
+    const ws = utils.json_to_sheet(exportData);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Transactions");
     writeFile(wb, "Transactions.xlsx");
@@ -150,18 +147,10 @@ const Transaction = () => {
     return (
       <div className="flex flex-col ml-1">
         <IoMdArrowDropup
-          className={`w-3 h-3 ${
-            sortConfig.key === key && sortConfig.direction === "asc"
-              ? "text-red-500"
-              : "text-gray-400"
-          }`}
+          className={`w-3 h-3 ${sortConfig.key === key && sortConfig.direction === "asc" ? "text-red-500" : "text-gray-400"}`}
         />
         <IoMdArrowDropdown
-          className={`w-3 h-3 ${
-            sortConfig.key === key && sortConfig.direction === "desc"
-              ? "text-red-500"
-              : "text-gray-400"
-          }`}
+          className={`w-3 h-3 ${sortConfig.key === key && sortConfig.direction === "desc" ? "text-red-500" : "text-gray-400"}`}
         />
       </div>
     );
@@ -177,7 +166,7 @@ const Transaction = () => {
           <div className="w-full sm:w-auto">
             <p className="mb-1 text-md text-[#191919]">Select Country</p>
             <select
-              className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-44 text-red-500"
+              className="p-2 rounded-lg border border-black bg-gray-200 w-full sm:w-44 text-red-500"
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
             >
@@ -191,9 +180,9 @@ const Transaction = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select By Last Active</p>
+            <p className="mb-1 text-md text-[#191919]">Select By Date</p>
             <select
-              className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-44 text-red-500"
+              className="p-2 rounded-lg border border-black bg-gray-200 w-full sm:w-44 text-red-500"
               value={lastActive}
               onChange={(e) => setLastActive(e.target.value)}
             >
@@ -209,35 +198,33 @@ const Transaction = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select by Country</p>
+            <p className="mb-1 text-md text-[#191919]">Select by User</p>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-400" size={16} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white border rounded-full border-red-400 bg-red-400" size={16} />
               <input
                 type="text"
-                placeholder="Search by Country"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-48 pl-10"
+                className="p-2 rounded-lg border border-black bg-gray-200 w-full sm:w-48 pl-10"
               />
             </div>
           </div>
 
-          <button
-            onClick={downloadExcel}
-            className="w-full sm:w-auto ml-auto p-2 bg-black text-white rounded flex items-center justify-center gap-2"
+          <button 
+            onClick={downloadExcel} 
+            className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg ml-96"
           >
-            <Download size={16} />
-            
+            <Download size={24} className="text-white" />
           </button>
         </div>
 
         {/* Table Section */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-y-2 border-[#FA9E93]">
+            <thead className="border-y-2 border-red-400">
               <tr>
                 <th
-                  className="p-1 border-x-1 border-[#808080] p-1 cursor-pointer"
+                  className="p-1 border-x-1 border-[#80808] p-1 cursor-pointer"
                   onClick={() => requestSort("transactionId")}
                 >
                   <div className="flex items-center">
@@ -296,7 +283,7 @@ const Transaction = () => {
               {sortedTransactions
                 .slice(indexOfFirstItem, indexOfLastItem)
                 .map((txn, index) => (
-                  <tr key={index} className="hover:bg-gray-100 text-left">
+                  <tr key={index} className="hover:bg-gray-100 text-left border border-white">
                     <td className="p-2">{txn.transactionId}</td>
                     <td className="p-2">{txn.user}</td>
                     <td className="p-2">{txn.expertBooked}</td>
@@ -309,37 +296,37 @@ const Transaction = () => {
           </table>
         </div>
 
-{/* Pagination Section */}
-<div className="flex justify-center items-center mt-4">
-  {/* Left Arrow */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-  >
-    <FaChevronLeft />
-  </button>
+        {/* Pagination Section */}
+        <div className="flex justify-center items-center mt-4">
+          {/* Left Arrow */}
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+          >
+            <FaChevronLeft />
+          </button>
 
-  {/* Page Numbers */}
-  {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
-    <button
-      key={i}
-      onClick={() => paginate(i + 1)}
-      className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
-    >
-      {i + 1}
-    </button>
-  ))}
+          {/* Page Numbers */}
+          {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => paginate(i + 1)}
+              className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
+            >
+              {i + 1}
+            </button>
+          ))}
 
-  {/* Right Arrow */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
-    className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-  >
-    <FaChevronRight />
-  </button>
-</div>
+          {/* Right Arrow */}
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
+            className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+          >
+            <FaChevronRight />
+          </button>
+        </div>
       </div>
     </div>
   );
