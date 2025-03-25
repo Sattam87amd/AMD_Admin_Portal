@@ -304,11 +304,12 @@ const Withdrawal = () => {
 
 {/* Pagination Section */}
 <div className="flex justify-center items-center mt-4 gap-2">
-  {/* Left Arrow */}
+  <div className="border shadow-lg rounded-lg">
+    {/* Left Arrow */}
   <button
     onClick={() => paginate(currentPage - 1)}
     disabled={currentPage === 1}
-    className="px-4 py-2 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+    className="px-4 py-2 rounded  text-gray-700 disabled:opacity-50"
   >
     <FaChevronLeft />
   </button>
@@ -318,7 +319,7 @@ const Withdrawal = () => {
     <button
       key={i}
       onClick={() => paginate(i + 1)}
-      className={`px-4 py-2 rounded ${currentPage === i + 1 ? "bg-red-500 text-white" : "bg-gray-200"}`}
+      className={`px-4 py-2 rounded ${currentPage === i + 1 ? "bg-red-500 text-white" : "bg-white"}`}
     >
       {i + 1}
     </button>
@@ -328,12 +329,15 @@ const Withdrawal = () => {
   <button
     onClick={() => paginate(currentPage + 1)}
     disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
-    className="px-4 py-2 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+    className="px-4 py-2 rounded text-gray-700 disabled:opacity-50"
   >
     <FaChevronRight />
   </button>
-</div>
+  </div>
+
+
       </div>
+    </div>
     </div>
   );
 };
