@@ -1,6 +1,7 @@
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
+import SessionHistory from '@/components/SessionManagement/SessionHistory'
 import SessionManagement from '@/components/SessionManagement/SessionManagement'
 import React from 'react'
 
@@ -22,7 +23,7 @@ const Page = () => {
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
-          <SessionManagement />
+          <SessionHistory />
           
           
           <Footer />

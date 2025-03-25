@@ -5,10 +5,14 @@ import { Download, Search } from "lucide-react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoEyeOutline } from "react-icons/io5";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
 
 const SessionManagement = () => {
   // State for active session type (Action Session or Session History)
   const [activeSession, setActiveSession] = useState("Action Session");
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -164,6 +168,11 @@ const SessionManagement = () => {
     link.click();
   };
   
+  const Sessionedirect = () => {
+    // Redirect to another page
+    router.push("/components/SessionManagement/SessionHistory"); // Replace with your desired path
+  };
+
 
   return (
     <div className="flex justify-center w-full min-h-screen p-6 bg-white overflow-x-scroll">
@@ -178,11 +187,11 @@ const SessionManagement = () => {
           >
             Action Session
           </button>
+          
           <button
-            onClick={() => setActiveSession("Session History")}
             className={`py-2 px-6 ${activeSession === "Session History" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
-          >
-            Session History
+          ><Link href="/sessionhistory">
+            Session History</Link>
           </button>
         </div>
 

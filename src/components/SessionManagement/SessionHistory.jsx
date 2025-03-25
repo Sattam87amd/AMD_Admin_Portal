@@ -5,6 +5,7 @@ import { Download, Search } from "lucide-react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoEyeOutline } from "react-icons/io5";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import Link from "next/link";
 
 const SessionHistory = () => {
   // State for active session type (Action Session or Session History)
@@ -121,13 +122,20 @@ const SessionHistory = () => {
       <div className="w-full max-w-screen-xl px-4">
         <h1 className="text-2xl font-bold mb-4 text-[#191919]">SESSION HISTORY</h1>
 
+        
         {/* Buttons for Action Session and Session History */}
         <div className="flex gap-1 mb-2">
           <button
-            onClick={() => setActiveSession("Session History")}
+            onClick={() => setActiveSession("Action Session")}
+            className={`py-2 px-6 ${activeSession === "Action Session" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
+          ><Link href="/sessionmanagement">
+            </Link>
+          </button>
+          
+          <button
             className={`py-2 px-6 ${activeSession === "Session History" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
-          >
-            Session History
+          ><Link href="/sessionhistory">
+            Session History</Link>
           </button>
         </div>
 
@@ -179,7 +187,6 @@ const SessionHistory = () => {
                   <th className="p-2 text-center">DATE/TIME</th>
                   <th className="p-2 text-center">DURATION</th>
                   <th className="p-2 text-center">FEEDBACK</th>
-                  <th className="p-2 text-center">ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -191,14 +198,7 @@ const SessionHistory = () => {
                     <td className="p-2">{session.date}<br />{session.time}</td>
                     <td className="p-2">{session.duration}</td>
                     <td className="p-2">{session.feedback}</td>
-                    <td className="p-2 text-center">
-                      <button
-                        onClick={() => openPopup(session)}
-                        className="p-2 bg-black text-white rounded-md"
-                      >
-                        <IoEyeOutline size={20} />
-                      </button>
-                    </td>
+                  
                   </tr>
                 ))}
               </tbody>
