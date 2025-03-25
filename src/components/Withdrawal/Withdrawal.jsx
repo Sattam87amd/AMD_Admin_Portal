@@ -176,7 +176,7 @@ const Withdrawal = () => {
         {/* Filters Section */}
         <div className="flex flex-col sm:flex-row gap-4 items-center mb-6">
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select Country</p>
+            <p className="mb-1 text-md text-[#191919]">Select Expert</p>
             <select
               className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-44 text-red-500"
               value={selectedCountry}
@@ -192,7 +192,7 @@ const Withdrawal = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select By Last Active</p>
+            <p className="mb-1 text-md text-[#191919]">Select By Status</p>
             <select
               className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-44 text-red-500"
               value={lastActive}
@@ -210,12 +210,12 @@ const Withdrawal = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select by Country</p>
+            <p className="mb-1 text-md text-[#191919]">Select by Transaction ID</p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-400" size={16} />
               <input
                 type="text"
-                placeholder="Search by Country"
+
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="p-2 rounded-lg border border-gray-400 bg-gray-200 w-full sm:w-48 pl-10"

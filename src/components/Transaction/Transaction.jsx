@@ -26,6 +26,9 @@ const Transaction = () => {
     { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED", country: "India" },
     { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING", country: "USA" },
     { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED", country: "Canada" },
+    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED", country: "India" },
+    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING", country: "USA" },
+    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED", country: "Canada" },
     { transactionId: "B434-046", user: "392226", expertBooked: "mike", amount: "$250", date: "25/2/2025", status: "BOOKED", country: "Australia" },
     // (other transactions omitted for brevity)
   ];
@@ -212,7 +215,7 @@ const Transaction = () => {
 
           <button
             onClick={downloadExcel}
-            className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg ml-96"
+            className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg ml-auto"
           >
             <Download size={24} className="text-white" />
           </button>
@@ -298,11 +301,12 @@ const Transaction = () => {
 
         {/* Pagination Section */}
         <div className="flex justify-center items-center mt-4">
+        <div className="border rounded-lg shadow-xl">
           {/* Left Arrow */}
           <button
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}
-            className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+            className="mx-1 px-3 py-1 rounded  text-gray-700 disabled:opacity-50"
           >
             <FaChevronLeft />
           </button>
@@ -322,13 +326,15 @@ const Transaction = () => {
           <button
             onClick={() => paginate(currentPage + 1)}
             disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
-            className="mx-1 px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+            className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
           >
             <FaChevronRight />
           </button>
         </div>
+
+        </div>
+          </div>
       </div>
-    </div>
   );
 };
 
