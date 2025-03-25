@@ -9,8 +9,8 @@ import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
 const Transaction = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("All");
+  const [experts, setExperts] = useState([]);
+  const [selectedExpert, setSelectedExpert] = useState("All");
   const [lastActive, setLastActive] = useState("All Time");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -23,51 +23,43 @@ const Transaction = () => {
   });
 
   const dummyTransactions = [
-    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED" },
-    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING" },
-    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED" },
-    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED" },
-    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING"},
-    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED"},
-    { transactionId: "B434-046", user: "392226", expertBooked: "mike", amount: "$250", date: "25/2/2025", status: "BOOKED" },
-    // (other transactions omitted for brevity)
+    { transactionId: "B434-043", user: "392223", expertBooked: "Raivan", amount: "$200", date: "2025-02-22", status: "BOOKED" },
+    { transactionId: "B434-044", user: "392224", expertBooked: "John", amount: "$150", date: "2025-02-23", status: "BOOKED" },
+    { transactionId: "B434-045", user: "392225", expertBooked: "Sarah", amount: "$300", date: "2025-02-24", status: "BOOKED" },
+    { transactionId: "B434-046", user: "392226", expertBooked: "Mike", amount: "$250", date: "2025-02-25", status: "BOOKED" },
+    { transactionId: "B434-047", user: "392227", expertBooked: "Emma", amount: "$180", date: "2025-02-20", status: "BOOKED" },
+    { transactionId: "B434-048", user: "392228", expertBooked: "David", amount: "$220", date: "2025-02-19", status: "BOOKED" },
+    { transactionId: "B434-049", user: "392229", expertBooked: "Lisa", amount: "$190", date: "2025-01-15", status: "BOOKED" },
+    { transactionId: "B434-050", user: "392230", expertBooked: "Raivan", amount: "$210", date: "2024-12-10", status: "BOOKED" },
+    { transactionId: "B434-051", user: "392231", expertBooked: "John", amount: "$175", date: "2024-11-05", status: "BOOKED" },
+    { transactionId: "B434-052", user: "392232", expertBooked: "Sarah", amount: "$320", date: "2024-08-22", status: "BOOKED" },
   ];
 
   useEffect(() => {
     setTransactions(dummyTransactions);
     setFilteredTransactions(dummyTransactions);
 
-    const fetchCountries = async () => {
-      try {
-        const res = await fetch("https://restcountries.com/v3.1/all");
-        const data = await res.json();
-        const countryList = data.map((country) => ({
-          name: country.name.common,
-          flag: country.flags.png,
-        }));
-        countryList.sort((a, b) => a.name.localeCompare(b.name));
-        setCountries(countryList);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
-      }
-    };
-
-    fetchCountries();
+    // Extract unique experts from transactions
+    const uniqueExperts = [...new Set(dummyTransactions.map(txn => txn.expertBooked))];
+    setExperts(uniqueExperts.sort());
   }, []);
 
   useEffect(() => {
     let filtered = transactions;
 
-    if (selectedCountry !== "All") {
-      filtered = filtered.filter((txn) => txn.country === selectedCountry);
+    // Filter by expert
+    if (selectedExpert !== "All") {
+      filtered = filtered.filter((txn) => txn.expertBooked === selectedExpert);
     }
 
+    // Search by user ID
     if (searchQuery) {
       filtered = filtered.filter((txn) =>
-        txn.country.toLowerCase().includes(searchQuery.toLowerCase())
+        txn.user.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
+    // Filter by date range
     if (lastActive !== "All Time") {
       const currentDate = new Date();
       filtered = filtered.filter((txn) => {
@@ -98,7 +90,7 @@ const Transaction = () => {
 
     setFilteredTransactions(filtered);
     setCurrentPage(1);
-  }, [searchQuery, selectedCountry, lastActive, transactions]);
+  }, [searchQuery, selectedExpert, lastActive, transactions]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -115,7 +107,6 @@ const Transaction = () => {
       "Amount": txn.amount,
       "Date": txn.date,
       "Status": txn.status,
-      "Country": txn.country,
     }));
     const ws = utils.json_to_sheet(exportData);
     const wb = utils.book_new();
@@ -134,6 +125,21 @@ const Transaction = () => {
   const sortedTransactions = React.useMemo(() => {
     if (sortConfig.key) {
       return [...filteredTransactions].sort((a, b) => {
+        // Special handling for date sorting
+        if (sortConfig.key === "date") {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+        }
+        
+        // Special handling for amount sorting (remove $ and convert to number)
+        if (sortConfig.key === "amount") {
+          const amountA = parseFloat(a.amount.replace('$', ''));
+          const amountB = parseFloat(b.amount.replace('$', ''));
+          return sortConfig.direction === "asc" ? amountA - amountB : amountB - amountA;
+        }
+        
+        // Default string comparison
         if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === "asc" ? -1 : 1;
         }
@@ -167,16 +173,16 @@ const Transaction = () => {
         {/* Filters Section */}
         <div className="flex flex-col sm:flex-row gap-4 items-center mb-6">
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select Country</p>
+            <p className="mb-1 text-md text-[#191919]">Select Expert</p>
             <select
               className="p-2 rounded-lg border border-black bg-gray-200 w-full sm:w-44 text-red-500"
-              value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
+              value={selectedExpert}
+              onChange={(e) => setSelectedExpert(e.target.value)}
             >
-              <option value="All">All</option>
-              {countries.map((country) => (
-                <option key={country.name} value={country.name}>
-                  {country.name}
+              <option value="All">All Experts</option>
+              {experts.map((expert) => (
+                <option key={expert} value={expert}>
+                  {expert}
                 </option>
               ))}
             </select>
@@ -201,11 +207,12 @@ const Transaction = () => {
           </div>
 
           <div className="w-full sm:w-auto">
-            <p className="mb-1 text-md text-[#191919]">Select by User</p>
+            <p className="mb-1 text-md text-[#191919]">Search by User ID</p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white border rounded-full border-red-400 bg-red-400" size={16} />
               <input
                 type="text"
+                placeholder="Search user ID"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="p-2 rounded-lg border border-black bg-gray-200 w-full sm:w-48 pl-10"
@@ -291,55 +298,64 @@ const Transaction = () => {
               {sortedTransactions
                 .slice(indexOfFirstItem, indexOfLastItem)
                 .map((txn, index) => (
-                  <tr key={index} className="hover:bg-gray-100 text-left border border-white">
+                  <tr key={index} className="hover:bg-gray-100 text-left ">
                     <td className="p-2">{txn.transactionId}</td>
                     <td className="p-2">{txn.user}</td>
                     <td className="p-2">{txn.expertBooked}</td>
                     <td className="p-2">{txn.amount}</td>
-                    <td className="p-2">{txn.date}</td>
-                    <td className="p-2">{txn.status}</td>
+                    <td className="p-2">{new Date(txn.date).toLocaleDateString()}</td>
+                    <td className="p-2">
+  <span className={`p-2  text-black`}>
+    {txn.status}
+  </span>
+</td>
+
                   </tr>
                 ))}
             </tbody>
           </table>
         </div>
 
-
+        {/* Total Transactions */}
+        <div className="flex justify-center font-bold items-center mt-4">
+          <p className="text-md justify-center text-[#C91416]">{filteredTransactions.length} Total</p>
+        </div>
 
         {/* Pagination Section */}
-        <div className="flex justify-center items-center mt-4">
-          <div className="border rounded-lg shadow-xl">
-            {/* Left Arrow */}
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="mx-1 px-3 py-1 rounded  text-gray-700 disabled:opacity-50"
-            >
-              <FaChevronLeft />
-            </button>
-
-            {/* Page Numbers */}
-            {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
+        {filteredTransactions.length > 0 && (
+          <div className="flex justify-center items-center mt-4">
+            <div className="border rounded-lg shadow-xl">
+              {/* Left Arrow */}
               <button
-                key={i}
-                onClick={() => paginate(i + 1)}
-                className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
               >
-                {i + 1}
+                <FaChevronLeft />
               </button>
-            ))}
 
-            {/* Right Arrow */}
-            <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
-              className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
-            >
-              <FaChevronRight />
-            </button>
+              {/* Page Numbers */}
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => paginate(i + 1)}
+                  className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
+              >
+                <FaChevronRight />
+              </button>
+            </div>
           </div>
-
-        </div>
+        )}
       </div>
     </div>
   );

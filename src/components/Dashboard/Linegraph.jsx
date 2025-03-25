@@ -31,14 +31,15 @@ const data = [
 const UserGraph = () => {
   return (
     <div>
-       <div className="h-0.5 w-[80rem] bg-gray-300 mx-64"></div>
-    <div className="w-full flex flex-col items-center justify-center my-10">
-      <h2 className="text-2xl font-semibold mb-4 mr-[42%]">
+       <div className="h-0.5 w-[76rem] bg-gray-300 ml-5"></div>
+    <div className="w-full flex flex-col items-center justify-center my-10 -mx-40">
+      <h2 className="text-2xl font-semibold mb-4 mr-[45%]">
         Time wise Users Installed App
       </h2>
       
+{/* Bar for Users */}
 
-      <div className="w-[1101px] h-[400px] ml-28">
+      <div className="w-[1101px] h-[400px] ml-[165px]">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />

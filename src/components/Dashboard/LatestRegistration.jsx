@@ -161,7 +161,7 @@ const LatestRegistration = () => {
           </div>
         </div>
       </div>
-   <div className="w-full h-0.5 bg-gray-400"></div>
+      <div className="h-0.5 w-[75rem] bg-gray-300"></div>
       {/* Chart Section */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Latest Registrations</h2>
