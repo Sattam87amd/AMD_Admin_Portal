@@ -23,13 +23,13 @@ const Transaction = () => {
   });
 
   const dummyTransactions = [
-    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED", country: "India" },
-    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING", country: "USA" },
-    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED", country: "Canada" },
-    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED", country: "India" },
-    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING", country: "USA" },
-    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED", country: "Canada" },
-    { transactionId: "B434-046", user: "392226", expertBooked: "mike", amount: "$250", date: "25/2/2025", status: "BOOKED", country: "Australia" },
+    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED" },
+    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING" },
+    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED" },
+    { transactionId: "B434-043", user: "392223", expertBooked: "raivan", amount: "$200", date: "22/2/2025", status: "BOOKED" },
+    { transactionId: "B434-044", user: "392224", expertBooked: "john", amount: "$150", date: "23/2/2025", status: "PENDING"},
+    { transactionId: "B434-045", user: "392225", expertBooked: "sarah", amount: "$300", date: "24/2/2025", status: "COMPLETED"},
+    { transactionId: "B434-046", user: "392226", expertBooked: "mike", amount: "$250", date: "25/2/2025", status: "BOOKED" },
     // (other transactions omitted for brevity)
   ];
 
@@ -224,55 +224,60 @@ const Transaction = () => {
         {/* Table Section */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-y-2 border-red-400">
+            <thead className="border-y-2 border-red-400 relative">
               <tr>
                 <th
-                  className="p-1 border-x-1 border-[#808080] p-1 cursor-pointer"
+                  className="p-1 cursor-pointer relative"
                   onClick={() => requestSort("transactionId")}
                 >
                   <div className="flex items-center">
                     TRANSACTION ID
                     {getArrowIcons("transactionId")}
                   </div>
+                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
-                  className="p-2 border-x-2 border-[#808080] p-1 cursor-pointer"
+                  className="p-2 cursor-pointer relative"
                   onClick={() => requestSort("user")}
                 >
                   <div className="flex items-center">
                     USER
                     {getArrowIcons("user")}
                   </div>
+                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
-                  className="p-2 border-x-2 border-[#808080] p-1 cursor-pointer"
+                  className="p-2 cursor-pointer relative"
                   onClick={() => requestSort("expertBooked")}
                 >
                   <div className="flex items-center">
                     EXPERT BOOKED
                     {getArrowIcons("expertBooked")}
                   </div>
+                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
-                  className="p-2 border-x-2 border-[#808080] p-1 cursor-pointer"
+                  className="p-2 cursor-pointer relative"
                   onClick={() => requestSort("amount")}
                 >
                   <div className="flex items-center">
                     AMOUNT
                     {getArrowIcons("amount")}
                   </div>
+                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
-                  className="p-2 border-x-2 border-[#808080] p-1 cursor-pointer"
+                  className="p-2 cursor-pointer relative"
                   onClick={() => requestSort("date")}
                 >
                   <div className="flex items-center">
                     DATE
                     {getArrowIcons("date")}
                   </div>
+                  <div className="absolute right-0 top-1 h-8 w-[1px] bg-[#808080]"></div>
                 </th>
                 <th
-                  className="p-2 border-x-2 p-1 cursor-pointer"
+                  className="p-2 cursor-pointer relative"
                   onClick={() => requestSort("status")}
                 >
                   <div className="flex items-center">
@@ -299,42 +304,44 @@ const Transaction = () => {
           </table>
         </div>
 
+
+
         {/* Pagination Section */}
         <div className="flex justify-center items-center mt-4">
-        <div className="border rounded-lg shadow-xl">
-          {/* Left Arrow */}
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="mx-1 px-3 py-1 rounded  text-gray-700 disabled:opacity-50"
-          >
-            <FaChevronLeft />
-          </button>
-
-          {/* Page Numbers */}
-          {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
+          <div className="border rounded-lg shadow-xl">
+            {/* Left Arrow */}
             <button
-              key={i}
-              onClick={() => paginate(i + 1)}
-              className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="mx-1 px-3 py-1 rounded  text-gray-700 disabled:opacity-50"
             >
-              {i + 1}
+              <FaChevronLeft />
             </button>
-          ))}
 
-          {/* Right Arrow */}
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
-            className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
-          >
-            <FaChevronRight />
-          </button>
-        </div>
+            {/* Page Numbers */}
+            {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => paginate(i + 1)}
+                className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
+              >
+                {i + 1}
+              </button>
+            ))}
 
-        </div>
+            {/* Right Arrow */}
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === Math.ceil(filteredTransactions.length / itemsPerPage)}
+              className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
+            >
+              <FaChevronRight />
+            </button>
           </div>
+
+        </div>
       </div>
+    </div>
   );
 };
 

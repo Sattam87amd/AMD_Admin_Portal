@@ -16,14 +16,14 @@ const AdminLogs = () => {
     const reviewsPerPage = 6;
 
     const dummySessions = [
-        { loginEmail: "raihan@example.com", timestamp: "2025-03-20", actionType: "Setting Update", status: "Success", description: "Deposit successful" },
-        { loginEmail: "john@example.com", timestamp: "2025-03-18", actionType: "Discount Management", status: "Not Successful", description: "Withdrawal failed" },
-        { loginEmail: "alex@example.com", timestamp: "2025-03-19", actionType: "Setting Update", status: "Success", description: "Deposit successful" },
-        { loginEmail: "raihan@example.com", timestamp: "2025-03-17", actionType: "Discount Management", status: "Not Successful", description: "Deposit failed" },
-        { loginEmail: "michael@example.com", timestamp: "2025-03-16", actionType: "Setting Update", status: "Success", description: "Withdrawal successful" },
-        { loginEmail: "sara@example.com", timestamp: "2025-03-21", actionType: "Expert Request", status: "Not Successful", description: "Deposit failed" },
-        { loginEmail: "alex@example.com", timestamp: "2025-03-15", actionType: "Discount Management", status: "Success", description: "Deposit successful" },
-        { loginEmail: "raihan@example.com", timestamp: "2025-03-14", actionType: "Setting Update", status: "Not Successful", description: "Withdrawal failed" },
+        { loginEmail: "raihan@example.com", timestamp: "2025-03-20", actionType: "Setting Update", status: "Success", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "john@example.com", timestamp: "2025-03-18", actionType: "Discount Management", status: "Not Successful", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "alex@example.com", timestamp: "2025-03-19", actionType: "Setting Update", status: "Success", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "raihan@example.com", timestamp: "2025-03-17", actionType: "Discount Management", status: "Not Successful", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "michael@example.com", timestamp: "2025-03-16", actionType: "Setting Update", status: "Success", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "sara@example.com", timestamp: "2025-03-21", actionType: "Expert Request", status: "Not Successful", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "alex@example.com", timestamp: "2025-03-15", actionType: "Discount Management", status: "Success", description: "Updated API key for Tap Payments in Payment Setting" },
+        { loginEmail: "raihan@example.com", timestamp: "2025-03-14", actionType: "Setting Update", status: "Not Successful", description: "Updated API key for Tap Payments in Payment Setting" },
     ];
 
     const uniqueExperts = ["All", ...new Set(dummySessions.map((session) => session.timestamp))];
@@ -168,30 +168,35 @@ const AdminLogs = () => {
                 </div>
 
                 {/* Table */}
-                <table className="w-full">
-                    <thead className="bg-white border-y-2 border-[#FA9E93]">
+                {/* Table */}
+                <table className="w-full border-collapse ">
+                    <thead className="bg-white border-y-2 border-[#FA9E93] ">
                         <tr>
                             {[
-                                { label: "LOGIN EMAIL", column: "loginEmail" },
-                                { label: "TIMESTAMP", column: "timestamp" },
-                                { label: "ACTION TYPE", column: "actionType" },
-                                { label: "STATUS", column: "status" },
-                                { label: "DESCRIPTION", column: "description" },
-                            ].map(({ label, column }, index) => (
+                                { label: "LOGIN EMAIL", column: "loginEmail", width: "w-[20%]" },
+                                { label: "TIMESTAMP", column: "timestamp", width: "w-[15%]" },
+                                { label: "ACTION TYPE", column: "actionType", width: "w-[20%]" },
+                                { label: "STATUS", column: "status", width: "w-[15%]" },
+                                { label: "DESCRIPTION", column: "description", width: "w-[30%]" },
+                            ].map(({ label, column, width }, index) => (
                                 <th
                                     key={column}
-                                    className={`p-3 text-center cursor-pointer relative`}
+                                    className={`p-3 text-center cursor-pointer relative ${width}`}
                                     onClick={() => handleSort(column)}
                                 >
                                     <div className="flex justify-center items-center gap-2">
                                         {label}
                                         <div className="flex flex-col">
                                             <FaSortUp
-                                                className={`text-sm ${sortColumn === column && sortOrder === "asc" ? "text-black" : "text-black"
+                                                className={`text-sm ${sortColumn === column && sortOrder === "asc"
+                                                    ? "text-black"
+                                                    : "text-gray-400"
                                                     }`}
                                             />
                                             <FaSortDown
-                                                className={`text-sm ${sortColumn === column && sortOrder === "desc" ? "text-black" : "text-black"
+                                                className={`text-sm ${sortColumn === column && sortOrder === "desc"
+                                                    ? "text-black"
+                                                    : "text-gray-400"
                                                     }`}
                                             />
                                         </div>
@@ -199,13 +204,12 @@ const AdminLogs = () => {
 
                                     {/* Separator Line - Except last header */}
                                     {index !== 4 && (
-                                        <div className="absolute right-0 top-2/4 -translate-y-2/4 w-[1px] h-10 bg-gray-300"></div>
+                                        <div className="absolute right-0 top-2/4 -translate-y-2/4 w-[1px] h-10 bg-gray-300 -ml-5"></div>
                                     )}
                                 </th>
                             ))}
                         </tr>
                     </thead>
-
 
                     {/* Table Body */}
                     <tbody>
@@ -215,18 +219,18 @@ const AdminLogs = () => {
                                     key={index}
                                     className="hover:bg-gray-100 border-b border-gray-200 cursor-pointer"
                                 >
-                                    <td className="p-3 text-center">{session.loginEmail}</td>
-                                    <td className="p-3 text-center">{session.timestamp}</td>
-                                    <td className="p-3 text-center">{session.actionType}</td>
+                                    <td className="p-3 text-center w-[20%] break-words">{session.loginEmail}</td>
+                                    <td className="p-3 text-center w-[15%]">{session.timestamp}</td>
+                                    <td className="p-3 text-center w-[20%]">{session.actionType}</td>
                                     <td
-                                        className={`p-3 text-center ${session.status === "Success"
+                                        className={`p-3 text-center w-[15%] ${session.status === "Success"
                                             ? "text-green-500"
                                             : "text-red-500"
                                             }`}
                                     >
                                         {session.status}
                                     </td>
-                                    <td className="p-3 text-center">{session.description}</td>
+                                    <td className="p-3 text-center w-[30%] break-words">{session.description}</td>
                                 </tr>
                             ))
                         ) : (
@@ -238,6 +242,7 @@ const AdminLogs = () => {
                         )}
                     </tbody>
                 </table>
+
 
                 {/* Total Sessions Info */}
                 <div className="flex justify-center items-center mt-4 mb-2 text-gray-700">

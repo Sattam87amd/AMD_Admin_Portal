@@ -24,7 +24,7 @@ const Page = () => {
         </div>
 
         {/* Red Divider (optional) */}
-        <div className="hidden lg:block w-1 bg-red-600 " />
+        <div className="hidden lg:block w-1 bg-red-600 h-[1000px]" />
 
         {/* Main Content (Right) */}
        <LatestRegistration/>

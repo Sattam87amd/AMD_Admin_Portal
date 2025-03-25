@@ -14,6 +14,7 @@ import {
   FaUserCog,
   FaMoneyBillAlt,
   FaRegHandshake,
+  FaCalendar,
 } from "react-icons/fa";
 
 const AdminSidebar = () => {
@@ -22,14 +23,19 @@ const AdminSidebar = () => {
 
   const [userManagementOpen, setUserManagementOpen] = useState(false);
   const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [adminLogsOpen, setAdminLogsOpen] = useState(false); // State for Admin Logs dropdown
 
   const handleToggle = (setState) => {
     setState((prevState) => !prevState); // Toggle dropdown state
   };
 
-  const handleTabClick = (route) => {
+  const handleTabClick = (route, toggle = false) => {
     if (route) {
       router.push(route); // Navigate to the provided route
+    }
+
+    if (toggle) {
+      toggle(); // Toggle dropdown if the item has a dropdown
     }
   };
 
@@ -42,11 +48,12 @@ const AdminSidebar = () => {
     <div className="w-full h-auto bg-[#E6E6E6] p-4 rounded-3xl">
       <div className="space-y-2">
         {/* Sidebar Button Component */}
-        {[
+        {[ 
           { name: "Dashboard", icon: <FaTachometerAlt />, route: "/dashboard" },
           {
             name: "User Management",
             icon: <FaUserAlt />,
+            route: "/usermanagement",
             state: userManagementOpen,
             toggle: () => handleToggle(setUserManagementOpen),
             subItems: [
@@ -70,6 +77,7 @@ const AdminSidebar = () => {
           {
             name: "Payments & Finance",
             icon: <FaCreditCard />,
+            route: "/paymentfinance",
             state: paymentsOpen,
             toggle: () => handleToggle(setPaymentsOpen),
             subItems: [
@@ -93,13 +101,13 @@ const AdminSidebar = () => {
           },
           {
             name: "Admin Logs",
-            icon: <FaDatabase />,
+            icon: <FaCalendar />,
+            state: adminLogsOpen,
+            toggle: () => handleToggle(setAdminLogsOpen),
+            subItems: [
+              { name: "Discount Management", icon: <FaCogs />, route: "/discount" },
+            ],
             route: "/adminlogs",
-          },
-          {
-            name: "Discount Management",
-            icon: <FaCogs />,
-            route: "/discount",
           },
           {
             name: "Settings",
@@ -117,8 +125,8 @@ const AdminSidebar = () => {
             <div
               onClick={
                 item.toggle
-                  ? item.toggle
-                  : () => handleTabClick(item.route)
+                  ? () => handleTabClick(item.route, item.toggle) // If toggle is present, call toggle function and navigate
+                  : () => handleTabClick(item.route) // Just navigate if no toggle
               }
               className={`flex items-center justify-between p-3 rounded-lg cursor-pointer ${
                 isActive(item.route) && !item.subItems
