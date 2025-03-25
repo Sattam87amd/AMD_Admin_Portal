@@ -227,7 +227,7 @@ const Transaction = () => {
             className="w-full sm:w-auto ml-auto p-2 bg-black text-white rounded flex items-center justify-center gap-2"
           >
             <Download size={16} />
-            <span className="hidden sm:inline">Download</span>
+            
           </button>
         </div>
 
