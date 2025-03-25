@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";  // Import useRouter for navigation
+import { useRouter, usePathname } from "next/navigation";
 import {
   FaTachometerAlt,
   FaUserAlt,
@@ -17,21 +17,25 @@ import {
 } from "react-icons/fa";
 
 const AdminSidebar = () => {
-  const router = useRouter();  // Initialize the router
+  const router = useRouter(); // Initialize router
+  const pathname = usePathname(); // Get current route path
+
   const [userManagementOpen, setUserManagementOpen] = useState(false);
   const [paymentsOpen, setPaymentsOpen] = useState(false);
-  const [adminLogsOpen, setAdminLogsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("Dashboard");
 
   const handleToggle = (setState) => {
-    setState((prevState) => !prevState);
+    setState((prevState) => !prevState); // Toggle dropdown state
   };
 
-  const handleTabClick = (tabName, route) => {
-    setActiveTab(tabName);  // Set the active tab
+  const handleTabClick = (route) => {
     if (route) {
-      router.push(route);  // Navigate to the provided route
+      router.push(route); // Navigate to the provided route
     }
+  };
+
+  // Check if the route is active or default to Dashboard if no route is selected
+  const isActive = (route) => {
+    return pathname === route || (pathname === "/" && route === "/dashboard");
   };
 
   return (
@@ -46,11 +50,23 @@ const AdminSidebar = () => {
             state: userManagementOpen,
             toggle: () => handleToggle(setUserManagementOpen),
             subItems: [
-              { name: "Session Management", icon: <FaUserCog />, route: "/sessionmanagement" },
+              {
+                name: "Session Management",
+                icon: <FaUserCog />,
+                route: "/sessionmanagement",
+              },
             ],
           },
-          { name: "Experts On App", icon: <FaUserAlt />, route: "/experts" },
-          { name: "Pending Expert Requests", icon: <FaRegHandshake />, route: "/pendingexpertsrequest" },
+          {
+            name: "Experts On App",
+            icon: <FaUserAlt />,
+            route: "/experts",
+          },
+          {
+            name: "Pending Expert Requests",
+            icon: <FaRegHandshake />,
+            route: "/pendingexpertsrequest",
+          },
           {
             name: "Payments & Finance",
             icon: <FaCreditCard />,
@@ -58,31 +74,56 @@ const AdminSidebar = () => {
             toggle: () => handleToggle(setPaymentsOpen),
             subItems: [
               { name: "Overview", icon: <FaMoneyBillAlt />, route: "/overview" },
-              { name: "Transactions", icon: <FaMoneyBillAlt />, route: "/transactions" },
-              { name: "Withdrawal", icon: <FaMoneyBillAlt />, route: "/withdrawal" },
+              {
+                name: "Transactions",
+                icon: <FaMoneyBillAlt />,
+                route: "/transactions",
+              },
+              {
+                name: "Withdrawal",
+                icon: <FaMoneyBillAlt />,
+                route: "/withdrawal",
+              },
             ],
           },
-          { name: "Reviews/Feedback", icon: <FaThumbsUp />, route: "/review" },
+          {
+            name: "Reviews/Feedback",
+            icon: <FaThumbsUp />,
+            route: "/review",
+          },
           {
             name: "Admin Logs",
             icon: <FaDatabase />,
-            state: adminLogsOpen,
-            toggle: () => handleToggle(setAdminLogsOpen),
-            subItems: [
-              { name: "Discount Management", icon: <FaCogs />, route: "/discount" },
-            ],
+            route: "/adminlogs",
           },
-          { name: "Settings", icon: <FaCogs />, route: "/settings" },
-          { name: "Backup Management", icon: <FaDatabase />, route: "/backupmanagement" },
+          {
+            name: "Discount Management",
+            icon: <FaCogs />,
+            route: "/discount",
+          },
+          {
+            name: "Settings",
+            icon: <FaCogs />,
+            route: "/settings",
+          },
+          {
+            name: "Backup Management",
+            icon: <FaDatabase />,
+            route: "/backupmanagement",
+          },
         ].map((item, index) => (
           <div key={index}>
             {/* Main Sidebar Button */}
             <div
-              onClick={item.toggle ? item.toggle : () => handleTabClick(item.name, item.route)}
+              onClick={
+                item.toggle
+                  ? item.toggle
+                  : () => handleTabClick(item.route)
+              }
               className={`flex items-center justify-between p-3 rounded-lg cursor-pointer ${
-                activeTab === item.name
+                isActive(item.route) && !item.subItems
                   ? "bg-black text-white"
-                  : "hover:bg-black hover:text-white active:bg-black active:text-white"
+                  : "hover:bg-black hover:text-white"
               }`}
             >
               <div className="flex items-center space-x-2">
@@ -98,11 +139,11 @@ const AdminSidebar = () => {
                 {item.subItems.map((subItem, subIndex) => (
                   <div
                     key={subIndex}
-                    onClick={() => handleTabClick(subItem.name, subItem.route)}
+                    onClick={() => handleTabClick(subItem.route)}
                     className={`flex items-center space-x-2 p-2 rounded-lg cursor-pointer ${
-                      activeTab === subItem.name
+                      isActive(subItem.route)
                         ? "bg-black text-white"
-                        : "hover:bg-black hover:text-white active:bg-black active:text-white"
+                        : "hover:bg-black hover:text-white"
                     }`}
                   >
                     {subItem.icon}
