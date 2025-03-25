@@ -10,9 +10,8 @@ const Review = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 6;
-  const router = useRouter(); // Use Next.js router for navigation
 
-  // Dummy review data 
+  // Dummy review data
   const dummyReviews = [
     {
       reviewId: "A3J933",
@@ -69,9 +68,29 @@ const Review = () => {
     review.expert.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle button click for CSV Export
+  // Handle Export to CSV
   const handleExport = () => {
-    router.push("/export-page"); // Redirect to /export-page
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        ["REVIEW ID", "EXPERT", "RATING", "CONTENT"], // CSV Header
+        ...filteredReviews.map((review) => [
+          review.reviewId,
+          review.expert,
+          review.rating,
+          review.content,
+        ]),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
+
+    // Create Blob and Download CSV
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "reviews.csv");
+    document.body.appendChild(link);
+    link.click();
   };
 
   // Handle Approve/Reject/Flag action
@@ -107,9 +126,9 @@ const Review = () => {
           {/* Export as CSV Button */}
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 text-red-500 text-sm cursor-pointer"
+            className="flex items-center gap-2 text-sm cursor-pointer"
           >
-            <FaDownload />
+            <FaDownload className="text-black" />
             Export as CSV Format
           </button>
         </div>
@@ -193,6 +212,7 @@ const Review = () => {
           {filteredReviews.length}{" "}
           {filteredReviews.length === 1 ? "Result" : "Total"}
         </div>
+
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
           <div className="flex gap-6 p-2 border rounded-lg bg-white">
@@ -240,7 +260,6 @@ const Review = () => {
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
