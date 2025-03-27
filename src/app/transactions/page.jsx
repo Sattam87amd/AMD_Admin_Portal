@@ -1,7 +1,7 @@
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
-import Transaction from '@/components/Transaction/Transaction'
+import Transaction from '@/components/Transactions/Transactions'
 import React from 'react'
 
 const Page = () => {
