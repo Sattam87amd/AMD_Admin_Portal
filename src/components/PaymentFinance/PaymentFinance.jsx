@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // For redirect
 import { Search } from "lucide-react";
 import { FaDownload } from "react-icons/fa";
 import { FaSortUp, FaSortDown } from "react-icons/fa";
-
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdArrowUpward, MdArrowDownward } from "react-icons/md";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import * as XLSX from "xlsx"; // Import xlsx library
 
 const PaymentFinance = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,7 +13,6 @@ const PaymentFinance = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const reviewsPerPage = 6;
-  const router = useRouter(); // Use Next.js router for navigation
 
   // Dummy session data
   const dummySessions = [
@@ -98,9 +96,14 @@ const PaymentFinance = () => {
       (statusFilter === "All" || session.status === statusFilter)
   );
 
-  // Handle button click for CSV Export
+  // Handle button click for Excel Export
   const handleExport = () => {
-    router.push("/export-page"); // Redirect to /export-page
+    const ws = XLSX.utils.json_to_sheet(filteredSessions); // Convert data to worksheet
+    const wb = XLSX.utils.book_new(); // Create a new workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Payments"); // Append the worksheet to the workbook
+
+    // Download the Excel file
+    XLSX.writeFile(wb, "payments_finance.xlsx");
   };
 
   // Pagination logic
@@ -167,12 +170,12 @@ const PaymentFinance = () => {
             </div>
           </div>
 
-          {/* Export as CSV Button */}
+          {/* Export as Excel Button */}
           <button
             onClick={handleExport}
             className="flex items-center gap-2 text-red-500 text-lg font-medium cursor-pointer -mt-10 "
           >
-            Export as CSV Format
+            
             <div className="bg-black p-1 rounded-xs">
               <FaDownload className="text-white rounded-xl" />
             </div>
@@ -180,54 +183,50 @@ const PaymentFinance = () => {
         </div>
 
         {/* Data Table */}
-        <table className="w-full mx-10 mt-13">
-        <thead className="bg-white border-y-2 border-[#FA9E93]">
-  <tr>
-    {[
-      { key: "sessionId", label: "SESSION ID" },
-      { key: "userExpert", label: "USER/EXPERT" },
-      { key: "amount", label: "AMOUNT" },
-      { key: "method", label: "METHOD" },
-      { key: "status", label: "STATUS" },
-    ].map((column, index, array) => (
-      <th
-        key={column.key}
-        onClick={() => requestSort(column.key)}
-        className={`p-3 text-center cursor-pointer ${
-          index !== array.length - 1 ? "border-r-2 border-gray-300" : ""
-        }`}
-      >
-        <div className="flex justify-center items-center gap-1">
-          <span>{column.label}</span>
-          <div className="flex flex-col items-center">
-            {sortConfig.key === column.key ? (
-              sortConfig.direction === "asc" ? (
-                <>
-                  <FaSortUp className="text-[#EC6453] -mb-1" />
-                  <FaSortDown className="text-gray-300" />
-                </>
-              ) : (
-                <>
-                  <FaSortUp className="text-gray-300 -mb-1" />
-                  <FaSortDown className="text-[#EC6453]" />
-                </>
-              )
-            ) : (
-              <>
-                <FaSortUp className="text-gray-300 -mb-1" />
-                <FaSortDown className="text-gray-300" />
-              </>
-            )}
-          </div>
-        </div>
-      </th>
-    ))}
-    {/* ✅ Add border to the ACTIONS column */}
-    <th className="p-3 text-center border-l-2 border-gray-300">ACTIONS</th>
-  </tr>
-</thead>
-
-
+        <table className="w-full mx-2 mt-13">
+          <thead className="bg-white border-y-2 border-[#FA9E93]">
+            <tr>
+              {[{ key: "sessionId", label: "SESSION ID" },
+                { key: "userExpert", label: "USER/EXPERT" },
+                { key: "amount", label: "AMOUNT" },
+                { key: "method", label: "METHOD" },
+                { key: "status", label: "STATUS" }]
+                .map((column, index, array) => (
+                  <th
+                    key={column.key}
+                    onClick={() => requestSort(column.key)}
+                    className={`p-3 text-center cursor-pointer ${index !== array.length - 1 ? "border-r-2 border-gray-300" : ""
+                      }`}
+                  >
+                    <div className="flex justify-center items-center gap-1">
+                      <span>{column.label}</span>
+                      <div className="flex flex-col items-center">
+                        {sortConfig.key === column.key ? (
+                          sortConfig.direction === "asc" ? (
+                            <>
+                              <FaSortUp className="text-[#EC6453] -mb-1" />
+                              <FaSortDown className="text-gray-300" />
+                            </>
+                          ) : (
+                            <>
+                              <FaSortUp className="text-gray-300 -mb-1" />
+                              <FaSortDown className="text-[#EC6453]" />
+                            </>
+                          )
+                        ) : (
+                          <>
+                            <FaSortUp className="text-gray-300 -mb-1" />
+                            <FaSortDown className="text-gray-300" />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </th>
+                ))}
+              {/* ✅ Add border to the ACTIONS column */}
+              <th className="p-3 text-center border-l-2 border-gray-300">ACTIONS</th>
+            </tr>
+          </thead>
 
           <tbody>
             {currentSessions.length > 0 ? (
