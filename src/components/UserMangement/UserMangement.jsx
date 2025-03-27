@@ -19,13 +19,13 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5); // Default items per page
 
-  // New state for handling edit and delete popup visibility and current user data
+  // Popup and History state
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isHistoryPopupOpen, setIsHistoryPopupOpen] = useState(false);
+  const [userHistory, setUserHistory] = useState([]);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  // Dummy User Data (matches Attachment 6)
   const dummyUsers = [
     {
       country: "Belarus",
@@ -43,39 +43,13 @@ const UserManagement = () => {
       status: "Deactivate",
       phone: "+9876543210",
     },
-    {
-      country: "India",
-      name: "Lakhan",
-      username: "Lakhan123",
-      email: "lakhan123@gmail.com",
-      status: "Suspended",
-      phone: "+9876543210",
-    },
-    {
-      country: "UK",
-      name: "Aeran",
-      username: "Aeran123",
-      email: "aeran123@gmail.com",
-      status: "Active",
-      phone: "+9876543210",
-    },
-    {
-      country: "Netherlands",
-      name: "Jiteksi",
-      username: "Jiteksi123",
-      email: "jiteksi123@gmail.com",
-      status: "Deactivate",
-      phone: "+9876543210",
-    },
-    {
-      country: "USA",
-      name: "Iranks",
-      username: "Iranks123",
-      email: "iranks123@gmail.com",
-      status: "Active",
-      phone: "+9876543210",
-    },
-    // Add more dummy users if needed
+    // Add more users as needed
+  ];
+
+  // Dummy booking history data
+  const dummyHistory = [
+    { bookingId: "Bk-001", date: "2025-02-10", service: "Consultation", status: "Completed", amount: "$150" },
+    { bookingId: "Bk-002", date: "2025-02-10", service: "Consultation", status: "Pending", amount: "$75" },
   ];
 
   // Fetch country data from API
@@ -88,7 +62,6 @@ const UserManagement = () => {
           name: country.name.common,
           flag: country.flags.png,
         }));
-        // Sort countries alphabetically
         countryList.sort((a, b) => a.name.localeCompare(b.name));
         setCountries(countryList);
       } catch (error) {
@@ -98,12 +71,10 @@ const UserManagement = () => {
 
     fetchCountries();
 
-    // Load users from local storage or use dummy data
     const storedUsers = JSON.parse(localStorage.getItem("users")) || dummyUsers;
     setUsers(storedUsers);
     setFilteredUsers(storedUsers);
 
-    // Save users to local storage whenever they change
     localStorage.setItem("users", JSON.stringify(storedUsers));
   }, []);
 
@@ -111,12 +82,10 @@ const UserManagement = () => {
   useEffect(() => {
     let tempUsers = [...users];
 
-    // Filter by selected country
     if (selectedCountry !== "All") {
       tempUsers = tempUsers.filter((user) => user.country === selectedCountry);
     }
 
-    // Filter by search query
     if (searchQuery) {
       tempUsers = tempUsers.filter((user) =>
         user.country.toLowerCase().includes(searchQuery.toLowerCase())
@@ -132,7 +101,6 @@ const UserManagement = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Download Data to Excel
@@ -161,6 +129,18 @@ const UserManagement = () => {
     setIsPopupOpen(false);
   };
 
+  // Handle History Popup
+  const handleHistory = (user) => {
+    setUserHistory(dummyHistory); // Load dummy booking history
+    setIsHistoryPopupOpen(true);
+  };
+
+  // Open Delete Popup on Delete Button Click
+  const handleDelete = (user) => {
+    setUserToDelete(user);
+    setIsDeletePopupOpen(true);
+  };
+
   // Handle Deactivate/Activate - Toggle user status
   const handleStatusToggle = () => {
     const updatedStatus =
@@ -175,36 +155,16 @@ const UserManagement = () => {
     setIsPopupOpen(false);
   };
 
-  // Open Delete Popup on Delete Button Click
-  const handleDelete = (user) => {
-    setUserToDelete(user);
-    setIsDeletePopupOpen(true);
-  };
-
-  // Handle Delete Confirmation
-  const handleConfirmDelete = () => {
-    const updatedUsers = users.filter(
-      (user) => user.username !== userToDelete.username
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setIsDeletePopupOpen(false);
-  };
-
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
-        <h1 className="text-2xl font-bold mb-4 text-[#191919] ">
-          USER MANAGEMENT
-        </h1>
+        <h1 className="text-2xl font-bold mb-4 text-[#191919] ">USER MANAGEMENT</h1>
 
         {/* Filter Section */}
         <div className="flex gap-4 items-center mb-6">
           {/* Country Dropdown */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">
-              Select Country
-            </label>
+            <label className="block mb-1 text-md text-[#191919] ">Select Country</label>
             <select
               className="p-2 rounded-full border border-gray-300 w-44 bg-gray-100 text-[#C91416] focus:outline-none"
               value={selectedCountry}
@@ -219,49 +179,21 @@ const UserManagement = () => {
             </select>
           </div>
 
-          {/* Last Active Dropdown */}
-          <div>
-            <label className="block mb-1 text-md text-[#191919] ">
-              Select by Last Active
-            </label>
-            <select
-              className="p-2 px-3 rounded-2xl border border-gray-300 w-48 bg-gray-100 text-[#C91416] focus:outline-none"
-              value={lastActive}
-              onChange={(e) => setLastActive(e.target.value)}
-            >
-              <option>All Time</option>
-              <option>1 Day</option>
-              <option>1 Week</option>
-              <option>2 Week</option>
-              <option>1 Month</option>
-              <option>3 Month</option>
-              <option>6 Month</option>
-              <option>1 Year</option>
-              <option>1+ Year</option>
-            </select>
-          </div>
-
           {/* Search by Country */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">
-              Select by Country
-            </label>
+            <label className="block mb-1 text-md text-[#191919] ">Search by Country</label>
             <div className="relative">
               <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
                 <Search className="m-1 text-white" size={16} />
               </div>
-
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none pl-10" // Added `pl-10` to provide space for the icon
+                className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none pl-10"
               />
             </div>
           </div>
-
-
-
 
           {/* Download Button */}
           <div className="ml-auto mt-6">
@@ -294,7 +226,7 @@ const UserManagement = () => {
                 <td className="p-2">{user.name}</td>
                 <td className="p-2">{user.username}</td>
                 <td className="p-2">{user.email}</td>
-                <td className="p-2 text-center inline-block w-40 px-3 py-1 rounded-xl border ">{user.status}</td>
+                <td className="p-2 text-center inline-block w-40 px-3 py-1 rounded-xl border">{user.status}</td>
                 <td className="p-2">{user.phone}</td>
                 <td className="p-2 flex gap-4">
                   <button
@@ -309,7 +241,10 @@ const UserManagement = () => {
                   >
                     <MdDelete size={20} />
                   </button>
-                  <button className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]">
+                  <button
+                    className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
+                    onClick={() => handleHistory(user)}
+                  >
                     <RiHistoryLine size={20} />
                   </button>
                 </td>
@@ -338,80 +273,47 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* Edit Popup */}
-      {isPopupOpen && (
+      {/* Booking History Popup */}
+      {isHistoryPopupOpen && (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-96 shadow-lg opacity-[150%]">
-            <h2 className="text-xl font-bold mb-4">Edit User</h2>
-            <div>
-              <label className="block text-md mb-1">Email</label>
-              <input
-                type="email"
-                value={currentUser.email}
-                onChange={(e) =>
-                  setCurrentUser({ ...currentUser, email: e.target.value })
-                }
-                className="p-2 w-full mb-4 border border-gray-300 rounded-lg"
-              />
-              <label className="block text-md mb-1">Phone Number</label>
-              <input
-                type="text"
-                value={currentUser.phone}
-                onChange={(e) =>
-                  setCurrentUser({ ...currentUser, phone: e.target.value })
-                }
-                className="p-2 w-full mb-4 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div className="flex gap-4">
+          <div className="bg-white p-6 rounded-2xl w-[50vw] shadow-lg opacity-[150%] border border-white">
+            <h2 className="text-xl font-bold mb-4">Booking History</h2>
+            <table className="w-full rounded-md border border-[#D9D9D9] shadow-md">
+              <thead className="border-y-2 border-[#D9D9D9] bg-[#D9D9D9]">
+                <tr>
+                  <th className="p-2 text-left">Booking Id</th>
+                  <th className="p-2 text-left">Date</th>
+                  <th className="p-2 text-left">Service</th>
+                  <th className="p-2 text-left">Status</th>
+                  <th className="p-2 text-left">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userHistory.map((booking) => (
+                  <tr key={booking.bookingId}>
+                    <td className="p-2">{booking.bookingId}</td>
+                    <td className="p-2">{booking.date}</td>
+                    <td className="p-2">{booking.service}</td>
+                    <td
+                      className={`p-2 border text-center ${
+                        booking.status === "Completed"
+                          ? "bg-[#4CB269] text-white"
+                          : "bg-[#FFA629] text-white"
+                      }`}
+                    >
+                      {booking.status}
+                    </td>
+                    <td className="p-2">{booking.amount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="text-right">
               <button
-                onClick={handleUpdate}
-                className="bg-[#5858FA] text-white p-2 w-full rounded-lg"
+                onClick={() => setIsHistoryPopupOpen(false)}
+                className="text-black mt-4 px-6 py-2 rounded-lg border"
               >
-                UPDATE
-              </button>
-              <button
-                onClick={handleStatusToggle}
-                className="bg-[#5858FA] text-white p-2 w-full rounded-lg"
-              >
-                {currentUser.status === "Active" ? "DEACTIVATE" : "ACTIVATE"}
-              </button>
-            </div>
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => setIsPopupOpen(false)}
-                className=" border text-black p-2 w-38 px-10 rounded-lg"
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Popup */}
-      {isDeletePopupOpen && (
-        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-96 shadow-lg  ">
-            <h2 className="text-xl font-bold mb-4 text-red-600">
-              Confirm Delete
-            </h2>
-            <p className="mb-4 border border-t-[#FA9E93] border-b-[#FA9E93] border-l-white border-r-white ">
-              Are you sure you want to delete user permanently? You can’t undo
-              this action.
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setIsDeletePopupOpen(false)}
-                className="bg-gray-300 text-black p-2 w-full rounded-lg"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="bg-red-500 text-white p-2 w-full rounded-lg"
-              >
-                DELETE
+                Close
               </button>
             </div>
           </div>
