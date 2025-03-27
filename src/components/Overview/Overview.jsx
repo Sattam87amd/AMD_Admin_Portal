@@ -295,7 +295,7 @@ const Overview = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 
-                className="p-2 w-full rounded-xl border border-black bg-[#E6E6E6] text-gray-700 focus:outline-none"
+                className="p-2 w-full rounded-xl border border-black bg-[#E6E6E6] text-gray-700 focus:outline-none pl-10"
               />
             </div>
           </div>

@@ -6,6 +6,7 @@ import { utils, writeFile } from "xlsx";
 import { MdEdit } from "react-icons/md"; // Edit Icon
 import { MdDelete } from "react-icons/md"; // Delete Icon
 import { RiHistoryLine } from "react-icons/ri"; // History Icon
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io"; // Import IoIosArrowBack and IoIosArrowForward
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -101,6 +102,8 @@ const UserManagement = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -265,10 +268,20 @@ const UserManagement = () => {
         </table>
 
         {/* Pagination */}
-        <div className="flex justify-center mt-4">
-          {Array.from(
-            { length: Math.ceil(filteredUsers.length / itemsPerPage) },
-            (_, i) => (
+        <div className="flex justify-center items-center mt-4">
+          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg ${currentPage === 1
+                ? "text-gray-500 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <IoIosArrowBack size={20} />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i + 1}
                 onClick={() => paginate(i + 1)}
@@ -279,8 +292,19 @@ const UserManagement = () => {
               >
                 {i + 1}
               </button>
-            )
-          )}
+            ))}
+
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-lg ${currentPage === totalPages
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <IoIosArrowForward size={20} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -306,10 +330,9 @@ const UserManagement = () => {
                     <td className="p-2">{booking.date}</td>
                     <td className="p-2">{booking.service}</td>
                     <td
-                      className={`p-2 border text-center ${
-                        booking.status === "Completed"
-                          ? "bg-[#4CB269] text-white"
-                          : "bg-[#FFA629] text-white"
+                      className={`p-2 border text-center ${booking.status === "Completed"
+                        ? "bg-[#4CB269] text-white"
+                        : "bg-[#FFA629] text-white"
                       }`}
                     >
                       {booking.status}

@@ -198,17 +198,17 @@ const Experts = () => {
         </table>
 
         {/* Pagination */}
-        <div className="text-center text-sm mt-4 text-[#FA9E93]">
+        <div className="text-center text-sm mt-4 text-red-600">
           {filteredExperts.length}{" "}
           {filteredExperts.length === 1 ? "Result" : "Total"}
         </div>
 
         <div className="flex justify-center items-center mt-4">
-          <div className="flex gap-6 p-2 border rounded-lg bg-white">
+          <div className="flex gap-6 p-2 border rounded-lg bg-white shadow-md shadow-gray-400">
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-300 cursor-not-allowed" : "text-red-500"}`}
+              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-500 cursor-not-allowed" : "text-red-500"}`}
             >
               <IoIosArrowBack size={20} />
             </button>
@@ -227,7 +227,7 @@ const Experts = () => {
             <button
               onClick={() => paginate(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg ${currentPage === totalPages ? "text-gray-300 cursor-not-allowed" : "text-red-500"}`}
+              className={`p-2 rounded-lg ${currentPage === totalPages ? "text-gray-500 cursor-not-allowed" : "text-red-500"}`}
             >
               <IoIosArrowForward size={20} />
             </button>
