@@ -13,19 +13,20 @@ const UserManagement = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [lastActive, setLastActive] = useState("All Time");
+  const [searchName, setSearchName] = useState("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(5);
 
   // Popup and History state
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [isHistoryPopupOpen, setIsHistoryPopupOpen] = useState(false);
-  const [userHistory, setUserHistory] = useState([]);
   const [userToDelete, setUserToDelete] = useState(null);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+  const [isHistoryPopupOpen, setIsHistoryPopupOpen] = useState(false);
+  const [userHistory, setUserHistory] = useState([]);
 
   const dummyUsers = [
     {
@@ -35,6 +36,7 @@ const UserManagement = () => {
       email: "radioivan@gmail.com",
       status: "Active",
       phone: "+9876543210",
+      lastActive: "2024-03-15",
     },
     {
       country: "India",
@@ -43,6 +45,7 @@ const UserManagement = () => {
       email: "ram123@gmail.com",
       status: "Deactivate",
       phone: "+9876543210",
+      lastActive: "2024-02-01",
     },
     {
       country: "United States",
@@ -51,6 +54,7 @@ const UserManagement = () => {
       email: "john.doe@example.com",
       status: "Active",
       phone: "+1234567890",
+      lastActive: "2024-03-10",
     },
     {
       country: "Canada",
@@ -59,6 +63,7 @@ const UserManagement = () => {
       email: "alice@example.com",
       status: "Deactivate",
       phone: "+1122334455",
+      lastActive: "2024-01-15",
     },
     {
       country: "Germany",
@@ -67,6 +72,7 @@ const UserManagement = () => {
       email: "hans.g@example.com",
       status: "Active",
       phone: "+49876543210",
+      lastActive: "2024-03-14",
     },
     {
       country: "France",
@@ -75,14 +81,17 @@ const UserManagement = () => {
       email: "marie.f@example.com",
       status: "Active",
       phone: "+33123456789",
+      lastActive: "2024-03-12",
     },
   ];
 
+  // Dummy booking history data
   const dummyHistory = [
     { bookingId: "Bk-001", date: "2025-02-10", service: "Consultation", status: "Completed", amount: "$150" },
     { bookingId: "Bk-002", date: "2025-02-10", service: "Consultation", status: "Pending", amount: "$75" },
   ];
 
+  // Fetch country data from API
   useEffect(() => {
     const fetchCountries = async () => {
       try {
@@ -109,20 +118,35 @@ const UserManagement = () => {
 
   useEffect(() => {
     let tempUsers = [...users];
+    const currentDate = new Date();
 
+    // Country filter
     if (selectedCountry !== "All") {
       tempUsers = tempUsers.filter((user) => user.country === selectedCountry);
     }
 
-    if (searchQuery) {
+    // Name search filter
+    if (searchName) {
       tempUsers = tempUsers.filter((user) =>
-        user.country.toLowerCase().includes(searchQuery.toLowerCase())
+        user.name.toLowerCase().includes(searchName.toLowerCase())
       );
+    }
+
+    // Last active filter
+    if (lastActive !== "All Time") {
+      const days = parseInt(lastActive);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      
+      tempUsers = tempUsers.filter((user) => {
+        const userDate = new Date(user.lastActive);
+        return userDate >= cutoffDate;
+      });
     }
 
     setFilteredUsers(tempUsers);
     setCurrentPage(1);
-  }, [selectedCountry, searchQuery, users]);
+  }, [selectedCountry, searchName, lastActive, users]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -145,18 +169,11 @@ const UserManagement = () => {
 
   const handleUpdate = () => {
     const updatedUsers = users.map((user) =>
-      user.username === currentUser.username
-        ? { ...user, ...currentUser }
-        : user
+      user.username === currentUser.username ? { ...user, ...currentUser } : user
     );
     setUsers(updatedUsers);
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsPopupOpen(false);
-  };
-
-  const handleHistory = (user) => {
-    setUserHistory(dummyHistory);
-    setIsHistoryPopupOpen(true);
   };
 
   const handleDelete = (user) => {
@@ -171,6 +188,11 @@ const UserManagement = () => {
     setUsers(updatedUsers);
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsDeletePopupOpen(false);
+  };
+
+  const handleHistory = (user) => {
+    setUserHistory(dummyHistory); // Load dummy booking history
+    setIsHistoryPopupOpen(true); // Open the booking history popup
   };
 
   return (
@@ -197,16 +219,31 @@ const UserManagement = () => {
           </div>
 
           <div>
-            <label className="block mb-1 text-md text-[#191919]">Search by Country</label>
+            <label className="block mb-1 text-md text-[#191919]">Last Active</label>
+            <select
+              className="p-2 rounded-full border border-gray-300 w-44 bg-gray-100 text-[#C91416] focus:outline-none"
+              value={lastActive}
+              onChange={(e) => setLastActive(e.target.value)}
+            >
+              <option value="All Time">All Time</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block mb-1 text-md text-[#191919]">Search by Name</label>
             <div className="relative">
               <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
                 <Search className="m-1 text-white" size={16} />
               </div>
               <input
                 type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
                 className="p-2 rounded-full border border-gray-300 w-48 bg-gray-100 text-gray-700 focus:outline-none pl-10"
+                placeholder="Search by name..."
               />
             </div>
           </div>
@@ -225,13 +262,13 @@ const UserManagement = () => {
         <table className="w-full">
           <thead className="border-y-2 border-[#FA9E93]">
             <tr>
-              <th className="p-2 text-center">COUNTRY NAME</th>
+              <th className="p-2 text-center">COUNTRY</th>
               <th className="p-2 text-center">NAME</th>
               <th className="p-2 text-center">USERNAME</th>
               <th className="p-2 text-center">EMAIL</th>
               <th className="p-2 text-center">STATUS</th>
-              <th className="p-2 text-center">PHONE NUMBER</th>
-              <th className="p-2 text-center">ACTION</th>
+              <th className="p-2 text-center">PHONE</th>
+              <th className="p-2 text-center">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -242,11 +279,13 @@ const UserManagement = () => {
                 <td className="p-2 text-center">{user.username}</td>
                 <td className="p-2 text-center">{user.email}</td>
                 <td className="p-2 text-center">
-                  <div className={`inline-block w-40 px-3 py-1 rounded-xl border ${
-                    user.status === 'Active' 
-                      ? 'bg-green-100 border-green-300' 
-                      : 'bg-red-100 border-red-300'
-                  }`}>
+                  <div
+                    className={`inline-block w-40 px-3 py-1 rounded-xl border ${
+                      user.status === "Active"
+                        ? "bg-green-100 border-green-300"
+                        : "bg-red-100 border-red-300"
+                    }`}
+                  >
                     {user.status}
                   </div>
                 </td>
@@ -266,7 +305,7 @@ const UserManagement = () => {
                   </button>
                   <button
                     className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
-                    onClick={() => handleHistory(user)}
+                    onClick={() => handleHistory(user)}  // Trigger booking history popup
                   >
                     <RiHistoryLine size={20} />
                   </button>
@@ -282,10 +321,11 @@ const UserManagement = () => {
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg ${currentPage === 1
-                ? "text-gray-500 cursor-not-allowed"
-                : "text-red-500"
-                }`}
+              className={`p-2 rounded-lg ${
+                currentPage === 1
+                  ? "text-gray-500 cursor-not-allowed"
+                  : "text-red-500"
+              }`}
             >
               <IoIosArrowBack size={20} />
             </button>
@@ -294,10 +334,11 @@ const UserManagement = () => {
               <button
                 key={i + 1}
                 onClick={() => paginate(i + 1)}
-                className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1
+                className={`mx-1 px-3 py-1 rounded ${
+                  currentPage === i + 1
                     ? "bg-[#C91416] text-white"
                     : "bg-gray-200"
-                  }`}
+                }`}
               >
                 {i + 1}
               </button>
@@ -306,10 +347,11 @@ const UserManagement = () => {
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg ${currentPage === totalPages
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-red-500"
-                }`}
+              className={`p-2 rounded-lg ${
+                currentPage === totalPages
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-red-500"
+              }`}
             >
               <IoIosArrowForward size={20} />
             </button>
@@ -328,7 +370,9 @@ const UserManagement = () => {
                 type="email"
                 className="p-2 w-full border border-gray-300 rounded-lg"
                 value={currentUser?.email || ""}
-                onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, email: e.target.value })
+                }
               />
             </div>
             <div className="mb-4">
@@ -337,14 +381,18 @@ const UserManagement = () => {
                 type="tel"
                 className="p-2 w-full border border-gray-300 rounded-lg"
                 value={currentUser?.phone || ""}
-                onChange={(e) => setCurrentUser({ ...currentUser, phone: e.target.value })}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, phone: e.target.value })
+                }
               />
             </div>
             <div className="mb-4">
               <label className="block mb-2">Status</label>
               <select
                 value={currentUser?.status}
-                onChange={(e) => setCurrentUser({ ...currentUser, status: e.target.value })}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, status: e.target.value })
+                }
                 className="p-2 w-full border border-gray-300 rounded-lg"
               >
                 <option value="Active">Active</option>
@@ -387,6 +435,53 @@ const UserManagement = () => {
                 className="px-6 py-2 bg-gray-500 text-white rounded-lg"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History Popup */}
+      {isHistoryPopupOpen && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-6 rounded-2xl w-[50vw] shadow-lg border border-white">
+            <h2 className="text-xl font-bold mb-4">Booking History</h2>
+            <table className="w-full rounded-md border border-[#D9D9D9] shadow-md">
+              <thead className="border-y-2 border-[#D9D9D9] bg-[#D9D9D9]">
+                <tr>
+                  <th className="p-2 text-left">Booking Id</th>
+                  <th className="p-2 text-left">Date</th>
+                  <th className="p-2 text-left">Service</th>
+                  <th className="p-2 text-left">Status</th>
+                  <th className="p-2 text-left">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userHistory.map((booking) => (
+                  <tr key={booking.bookingId}>
+                    <td className="p-2">{booking.bookingId}</td>
+                    <td className="p-2">{booking.date}</td>
+                    <td className="p-2">{booking.service}</td>
+                    <td
+                      className={`p-2 border text-center ${
+                        booking.status === "Completed"
+                          ? "bg-[#4CB269] text-white"
+                          : "bg-[#FFA629] text-white"
+                      }`}
+                    >
+                      {booking.status}
+                    </td>
+                    <td className="p-2">{booking.amount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="text-right">
+              <button
+                onClick={() => setIsHistoryPopupOpen(false)}
+                className="text-black mt-4 px-6 py-2 rounded-lg border"
+              >
+                Close
               </button>
             </div>
           </div>
