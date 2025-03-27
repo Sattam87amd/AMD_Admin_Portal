@@ -21,13 +21,13 @@ const Page = () => {
         </div>
 
         {/* Red Divider (optional) */}
-        <div className="hidden lg:block w-1 bg-red-600" />
+        <div className="hidden lg:block w-1 bg-red-600 ml-9" />
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
           <Profile />
-          <div className="fixed inset-x-0 w-[83.5%] ml-[16.5%] bottom-0  p-4 shadow-lg">
-          
+          <div className="w-[78.07rem] ml-[17rem]">
+          {/* //fixed inset-x-0 w-[77rem] ml-[16rem] bottom-0  p-4 shadow-lg */}
           <Footer />
           </div>
         </div>

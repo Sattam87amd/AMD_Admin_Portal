@@ -1,9 +1,9 @@
-
+import BackupManagement from '@/components/BackupManagement/BackupManagement'
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
-
 import Review from '@/components/Review/Review'
+import SessionManagement from '@/components/SessionManagement/SessionManagement'
 import React from 'react'
 
 const Page = () => {
@@ -20,13 +20,14 @@ const Page = () => {
         </div>
 
         {/* Red Divider (optional) */}
-        <div className="absolute left-[220px] top-0 w-1 bg-red-600 h-[171.4rem] z-10 ml-10"></div>
+        <div className="hidden lg:block w-1 bg-red-600 ml-10" />
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
-       <Review/>
-          
+          <Review />
+          <div className='mt-10 '>
           <Footer />
+          </div>
         </div>
         
       </div>

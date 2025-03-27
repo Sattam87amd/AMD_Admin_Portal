@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   FaTachometerAlt,
@@ -21,12 +21,22 @@ const AdminSidebar = () => {
   const router = useRouter(); // Initialize router
   const pathname = usePathname(); // Get current route path
 
-  const [userManagementOpen, setUserManagementOpen] = useState(false);
-  const [paymentsOpen, setPaymentsOpen] = useState(false);
-  const [adminLogsOpen, setAdminLogsOpen] = useState(false); // State for Admin Logs dropdown
+  // Initialize state with saved dropdown from localStorage
+  const [openDropdown, setOpenDropdown] = useState(null);
 
-  const handleToggle = (setState) => {
-    setState((prevState) => !prevState); // Toggle dropdown state
+  useEffect(() => {
+    // Check if there's a saved state in localStorage
+    const savedDropdown = localStorage.getItem("openDropdown");
+    if (savedDropdown) {
+      setOpenDropdown(savedDropdown);
+    }
+  }, []);
+
+  const handleToggle = (dropdown) => {
+    // Save the open dropdown state to localStorage
+    const newDropdown = openDropdown === dropdown ? null : dropdown;
+    setOpenDropdown(newDropdown);
+    localStorage.setItem("openDropdown", newDropdown); // Save to localStorage
   };
 
   const handleTabClick = (route, toggle = false) => {
@@ -54,8 +64,8 @@ const AdminSidebar = () => {
             name: "User Management",
             icon: <FaUserAlt />,
             route: "/usermanagement",
-            state: userManagementOpen,
-            toggle: () => handleToggle(setUserManagementOpen),
+            state: openDropdown === "userManagement",
+            toggle: () => handleToggle("userManagement"),
             subItems: [
               {
                 name: "Session Management",
@@ -78,8 +88,8 @@ const AdminSidebar = () => {
             name: "Payments & Finance",
             icon: <FaCreditCard />,
             route: "/paymentfinance",
-            state: paymentsOpen,
-            toggle: () => handleToggle(setPaymentsOpen),
+            state: openDropdown === "payments",
+            toggle: () => handleToggle("payments"),
             subItems: [
               { name: "Overview", icon: <FaMoneyBillAlt />, route: "/overview" },
               {
@@ -102,8 +112,8 @@ const AdminSidebar = () => {
           {
             name: "Admin Logs",
             icon: <FaCalendar />,
-            state: adminLogsOpen,
-            toggle: () => handleToggle(setAdminLogsOpen),
+            state: openDropdown === "adminLogs",
+            toggle: () => handleToggle("adminLogs"),
             subItems: [
               { name: "Discount Management", icon: <FaCogs />, route: "/discount" },
             ],
@@ -123,11 +133,7 @@ const AdminSidebar = () => {
           <div key={index}>
             {/* Main Sidebar Button */}
             <div
-              onClick={
-                item.toggle
-                  ? () => handleTabClick(item.route, item.toggle) // If toggle is present, call toggle function and navigate
-                  : () => handleTabClick(item.route) // Just navigate if no toggle
-              }
+              onClick={item.toggle ? () => handleTabClick(item.route, item.toggle) : () => handleTabClick(item.route)}
               className={`flex items-center justify-between p-3 rounded-lg cursor-pointer ${
                 isActive(item.route) && !item.subItems
                   ? "bg-black text-white"
