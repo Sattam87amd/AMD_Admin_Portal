@@ -25,6 +25,7 @@ const UserManagement = () => {
   const [isHistoryPopupOpen, setIsHistoryPopupOpen] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
 
   const dummyUsers = [
     {
@@ -153,6 +154,16 @@ const UserManagement = () => {
     setUsers(updatedUsers);
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsPopupOpen(false);
+  };
+
+  // Handle Delete Confirmation
+  const handleConfirmDelete = () => {
+    const updatedUsers = users.filter(
+      (user) => user.username !== userToDelete.username
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    setIsDeletePopupOpen(false);
   };
 
   return (
