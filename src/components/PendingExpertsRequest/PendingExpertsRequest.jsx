@@ -12,13 +12,14 @@ const PendingExpertsRequest = () => {
   const [filteredExperts, setFilteredExperts] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
-  const [selectedLastActive, setSelectedLastActive] = useState("All Time");
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
   const [rotationCount, setRotationCount] = useState(0);
   const [visiblePages, setVisiblePages] = useState([]);
+  const [selectedUsername, setSelectedUsername] = useState("");
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -37,12 +38,12 @@ const PendingExpertsRequest = () => {
 
   useEffect(() => {
     const dummyExperts = [
-      { id: 1, country: "Belarus", name: "Ivan", username: "raivan", email: "radioxivan@gmail.com" },
-      { id: 2, country: "India", name: "Ram", username: "Ram123", email: "ram123@gmail.com" },
-      { id: 3, country: "India", name: "Lakhan", username: "Lakhan123", email: "lakhan123@gmail.com" },
-      { id: 4, country: "United Kingdom", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com" },
-      { id: 5, country: "Netherlands", name: "Jiteksi", username: "jiteksi123", email: "jiteksi123@gmail.com" },
-      { id: 6, country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com" },
+      { id: 1, country: "Belarus", name: "Ivan", username: "raivan", email: "radioxivan@gmail.com", status: null },
+      { id: 2, country: "India", name: "Ram", username: "Ram123", email: "ram123@gmail.com", status: null },
+      { id: 3, country: "India", name: "Lakhan", username: "Lakhan123", email: "lakhan123@gmail.com", status: null },
+      { id: 4, country: "United Kingdom", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com", status: null },
+      { id: 5, country: "Netherlands", name: "Jiteksi", username: "jiteksi123", email: "jiteksi123@gmail.com", status: null },
+      { id: 6, country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", status: null },
     ];
 
     setExperts(dummyExperts);
@@ -56,6 +57,10 @@ const PendingExpertsRequest = () => {
       tempExperts = tempExperts.filter((expert) => expert.country === selectedCountry);
     }
 
+    if (selectedStatus !== "All") {
+      tempExperts = tempExperts.filter((expert) => expert.status === selectedStatus);
+    }
+
     if (searchQuery) {
       tempExperts = tempExperts.filter((expert) =>
         expert.country.toLowerCase().includes(searchQuery.toLowerCase())
@@ -64,24 +69,24 @@ const PendingExpertsRequest = () => {
 
     setFilteredExperts(tempExperts);
     setCurrentPage(1);
-  }, [selectedCountry, searchQuery, experts]);
+  }, [selectedCountry, selectedStatus, searchQuery, experts]);
 
   const generatePagination = () => {
     const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
     let pages = [];
-    
+
     pages.push(1);
-    if (currentPage > 3) pages.push('...');
-    
+    if (currentPage > 3) pages.push("...");
+
     const start = Math.max(2, currentPage - 1);
     const end = Math.min(totalPages - 1, currentPage + 1);
-    
+
     for (let i = start; i <= end; i++) pages.push(i);
-    
-    if (currentPage < totalPages - 2) pages.push('...');
+
+    if (currentPage < totalPages - 2) pages.push("...");
     if (totalPages > 1) pages.push(totalPages);
 
-    return pages.filter((page, index, array) => 
+    return pages.filter((page, index, array) =>
       array.indexOf(page) === index
     );
   };
@@ -90,34 +95,37 @@ const PendingExpertsRequest = () => {
     setVisiblePages(generatePagination());
   }, [filteredExperts, currentPage]);
 
-  const sortTable = (key, direction) => {
-    let newExperts = [...filteredExperts];
-    
-    if (rotationCount === 0 || sortConfig.key !== key) {
-      newExperts.sort((a, b) => {
-        if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
-        if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    } else {
-      if (direction === "asc") {
-        newExperts = [...newExperts.slice(1), newExperts[0]];
-      } else {
-        newExperts = [newExperts[newExperts.length - 1], ...newExperts.slice(0, -1)];
-      }
+  const sortTable = (key) => {
+    let direction = "asc"; // Default sort direction is ascending
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"; // If the same column is clicked again, toggle the direction
     }
 
+    let newExperts = [...filteredExperts];
+    newExperts.sort((a, b) => {
+      if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
+      if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
     setFilteredExperts(newExperts);
-    setRotationCount(prev => sortConfig.key === key ? (prev + 1) % filteredExperts.length : 0);
     setSortConfig({ key, direction });
   };
 
   const acceptRequest = (id) => {
-    setExperts((prevExperts) => prevExperts.filter((expert) => expert.id !== id));
+    setExperts((prevExperts) =>
+      prevExperts.map((expert) =>
+        expert.id === id ? { ...expert, status: "Accepted" } : expert
+      )
+    );
   };
 
   const rejectRequest = (id) => {
-    setExperts((prevExperts) => prevExperts.filter((expert) => expert.id !== id));
+    setExperts((prevExperts) =>
+      prevExperts.map((expert) =>
+        expert.id === id ? { ...expert, status: "Rejected" } : expert
+      )
+    );
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -126,8 +134,10 @@ const PendingExpertsRequest = () => {
   const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const nextPage = () => setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev));
-  const prevPage = () => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
+  const nextPage = () =>
+    setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev));
+  const prevPage = () =>
+    setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
 
   const downloadExcel = () => {
     const ws = utils.json_to_sheet(filteredExperts);
@@ -138,31 +148,29 @@ const PendingExpertsRequest = () => {
 
   const PaginationControls = () => (
     <div className="flex items-center justify-center mt-6">
-      <div className="text-red-500">
+      {/* Total count above pagination */}
+      <div className="text-red-500 mb-4">
         {filteredExperts.length} Total
       </div>
-      
+
+      {/* Pagination controls */}
       <div className="flex items-center gap-2">
         <button
           onClick={prevPage}
           disabled={currentPage === 1}
-          className={`p-2 ${currentPage === 1 ? 'text-gray-300' : 'text-gray-600'}`}
+          className={`${currentPage === 1 ? "text-gray-300" : "text-gray-600"}`}
         >
           <IoIosArrowBack size={20} />
         </button>
 
         {visiblePages.map((page, index) => (
-          page === '...' ? (
+          page === "..." ? (
             <span key={index} className="px-3">...</span>
           ) : (
             <button
               key={index}
               onClick={() => paginate(page)}
-              className={`w-8 h-8 rounded ${
-                currentPage === page 
-                  ? 'bg-red-500 text-white' 
-                  : 'bg-gray-100 text-gray-600'
-              }`}
+              className={`w-8 h-8 rounded ${currentPage === page ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'}`}
             >
               {page}
             </button>
@@ -201,66 +209,59 @@ const PendingExpertsRequest = () => {
             </div>
 
             <div>
-              <h3 className="mb-2">Select by Last Active</h3>
+              <h3 className="mb-2">Select by Status</h3>
               <select
                 className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
-                value={selectedLastActive}
-                onChange={(e) => setSelectedLastActive(e.target.value)}
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
               >
-                <option value="All Time">All Time</option>
-                <option value="Last 15 Days">Last 15 Days</option>
-                <option value="Last 30 Days">Last 30 Days</option>
+                <option value="All">All</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
               </select>
             </div>
 
-            <div className="relative w-64">
-              <h3>Select by Country</h3>
-              <Search className="absolute left-3 bottom-3 transform text-gray-200 bg-red-500 rounded-full border border-red-500" size={18} />
-              <input
-                type="text"
-                className="mt-2 p-2 pl-10 rounded-lg border border-black bg-gray-200 w-48"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            <div>
+              <h3 className="">Select by Username</h3>
+              <div className="relative w-64">
+                <Search className="absolute left-3 bottom-3 transform text-gray-200 bg-red-500 rounded-full border border-red-500" size={18} />
+                <input
+                  type="text"
+                  className="mt-2 p-2 pl-10 rounded-lg border border-black bg-gray-200 w-48 h-[2.5rem]"
+                  value={selectedUsername}
+                  onChange={(e) => setSelectedUsername(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
-          <button 
-            onClick={downloadExcel} 
+          <button
+            onClick={downloadExcel}
             className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg"
           >
             <Download size={24} className="text-white" />
           </button>
         </div>
 
-        <table className="w-full border-collapse border border-gray-300">
+        <table className="w-full border-collapse border border-white">
           <thead className="border-y-2 border-red-300 bg-white">
             <tr>
               {["country", "name", "username", "email"].map((key, index) => (
                 <th key={index} className="p-3 text-left font-semibold relative">
                   <div className="inline-flex items-center gap-2">
                     <span className="uppercase">{key.replace("_", " ")}</span>
-                    <div className="h-4 border-r border-gray-400 mx-2"></div>
                     <div className="flex flex-col items-center">
-                      <FaSortUp 
-                        onClick={() => sortTable(key, "asc")}
-                        className={`text-xs cursor-pointer ${
-                          sortConfig.key === key && sortConfig.direction === "asc" 
-                            ? "text-black" 
-                            : "text-gray-400"
-                        }`}
+                      <FaSortUp
+                        onClick={() => sortTable(key)}
+                        className={`text-xs cursor-pointer ml-[5.8rem] ${sortConfig.key === key && sortConfig.direction === "asc" ? "text-gray-200" : "text-black"}`}
                       />
-                      <FaSortDown 
-                        onClick={() => sortTable(key, "desc")}
-                        className={`text-xs -mt-1 cursor-pointer ${
-                          sortConfig.key === key && sortConfig.direction === "desc" 
-                            ? "text-black" 
-                            : "text-gray-400"
-                        }`}
+                      <FaSortDown
+                        onClick={() => sortTable(key)}
+                        className={`text-xs -mt-1 cursor-pointer ml-[5.8rem] ${sortConfig.key === key && sortConfig.direction === "desc" ? "text-gray-200" : "text-black"}`}
                       />
                     </div>
                   </div>
-                  {index !== 3 && <div className="absolute right-0 top-1/2 transform -translate-y-1/2 h-5 border-l border-gray-400"></div>}
+                  {index !== 3 && <div className="absolute right-0 top-1/2 transform -translate-y-1/2 h-9 border-l border-black"></div>}
                 </th>
               ))}
             </tr>
@@ -275,18 +276,26 @@ const PendingExpertsRequest = () => {
                 <td className="text-left">{expert.email}</td>
                 <td className="text-left">
                   <div className="flex gap-2">
-                    <button
-                      className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-[#50C878] text-white rounded-md"
-                      onClick={() => acceptRequest(expert.id)}
-                    >
-                      <Check size={28} strokeWidth={2} className="text-white" />
-                    </button>
-                    <button
-                      className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-[#E63946] text-white rounded-md"
-                      onClick={() => rejectRequest(expert.id)}
-                    >
-                      <X size={28} strokeWidth={2} className="text-white" />
-                    </button>
+                    {!expert.status ? (
+                      <>
+                        <button
+                          className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-[#60DF7C] text-white rounded-md"
+                          onClick={() => acceptRequest(expert.id)}
+                        >
+                          <Check size={28} strokeWidth={2} className="text-white" />
+                        </button>
+                        <button
+                          className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-[#FF2A2A] text-white rounded-md"
+                          onClick={() => rejectRequest(expert.id)}
+                        >
+                          <X size={28} strokeWidth={2} className="text-white" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className={`flex items-center justify-center w-[80px] h-[40px] mt-[3px] rounded-md ${expert.status === "Accepted" ? "bg-green-500" : "bg-red-500"}`}>
+                        <span className="text-white">{expert.status}</span>
+                      </div>
+                    )}
                     <button
                       className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-black text-white rounded-md"
                     >

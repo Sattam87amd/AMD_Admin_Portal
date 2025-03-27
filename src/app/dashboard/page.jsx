@@ -18,15 +18,15 @@ const Page = () => {
       <div className="flex flex-1 relative"> {/* Added 'relative' to ensure position for the divider */}
         
         {/* Sidebar (Left) */}
-        <div className="hidden lg:block w-64 left-[230px]">
+        <div className="w-64 left-[230px]">
           <AdminSidebar />
         </div>
 
         {/* Red Divider */}
-        <div className="absolute left-[220px] top-0 w-1 bg-red-600 h-[171.4rem] z-10"></div> {/* Explicitly position the divider */}
+        <div className="absolute left-[220px] top-0 w-1 bg-red-600 h-[171.4rem] z-10 ml-8"></div> {/* Explicitly position the divider */}
 
         {/* Main Content (Right) */}
-        <div className="flex-1 pl-2">
+        <div className="flex-1 pl-8">
           <LatestRegistration />
           <Domain />
           <UserGraph />
@@ -34,7 +34,7 @@ const Page = () => {
         </div>
       </div>
 
-       <div className='w-[77rem] ml-[14rem]'>  
+       <div className='w-[68rem] ml-[16rem]'>  
       <Footer />
       </div>
       {/* Footer at Bottom */}

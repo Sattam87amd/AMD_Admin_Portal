@@ -20,7 +20,7 @@ const Page = () => {
         </div>
 
         {/* Red Divider (optional) */}
-        <div className="hidden lg:block w-1 bg-red-600" />
+        <div className="absolute left-[220px] top-0 w-1 bg-red-600 h-[171.4rem] z-10 ml-10"></div>
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">

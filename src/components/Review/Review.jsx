@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation"; // For redirect
 import { Search } from "lucide-react";
 import { Download } from "lucide-react";
-import { CheckCircle, XCircle, Flag } from "lucide-react";
+import { Check, X, Flag } from "lucide-react";  // Updated import for Check and X icons
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { FaSortUp, FaSortDown } from "react-icons/fa"; // Import sort icons
 
 const Review = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,37 +33,10 @@ const Review = () => {
       rating: "3 STARS",
       content: "alex@example.com",
     },
-    {
-      reviewId: "A3J933",
-      expert: "raihan",
-      rating: "4 STARS",
-      content: "radiovan@gmail.com",
-    },
-    {
-      reviewId: "A3J933",
-      expert: "raihan",
-      rating: "4 STARS",
-      content: "radiovan@gmail.com",
-    },
-    {
-      reviewId: "A3J936",
-      expert: "raihan",
-      rating: "4 STARS",
-      content: "radiovan@gmail.com",
-    },
-    {
-      reviewId: "A3J933",
-      expert: "raihan",
-      rating: "4 STARS",
-      content: "radiovan@gmail.com",
-    },
-    {
-      reviewId: "A3J935",
-      expert: "alex",
-      rating: "3 STARS",
-      content: "alex@example.com",
-    },
+    // ... additional review data
   ];
+
+  const sortConfig = { key: "", direction: "asc" }; // Add sorting config for sorting functionality
 
   // Filter reviews based on search query
   const filteredReviews = dummyReviews.filter((review) =>
@@ -149,23 +123,34 @@ const Review = () => {
         </div>
 
         {/* Data Table */}
-        <table className="w-full">
-          <thead className="bg-white border-y-2 border-[#FA9E93]">
+        <table className="w-full border-collapse border border-white">
+          <thead className="border-y-2 border-red-300 bg-white">
             <tr>
-              <th className="p-3 text-center">REVIEW ID</th>
-              <th className="p-3 text-center">EXPERT</th>
-              <th className="p-3 text-center">RATING</th>
-              <th className="p-3 text-center">CONTENT</th>
-              <th className="p-3 text-center">ACTIONS</th>
+              {["reviewId", "expert", "rating", "content"].map((key, index) => (
+                <th key={index} className="p-3 text-center font-semibold relative">
+                  <div className="inline-flex items-center gap-2">
+                    <span className="uppercase">{key.replace("_", " ")}</span>
+                    <div className="flex flex-col items-center">
+                      <FaSortUp
+                        onClick={() => sortTable(key)}  // Handle sorting
+                        className={`text-xs cursor-pointer ml-[5.8rem] ${sortConfig.key === key && sortConfig.direction === "asc" ? "text-gray-200" : "text-black"}`}
+                      />
+                      <FaSortDown
+                        onClick={() => sortTable(key)}  // Handle sorting
+                        className={`text-xs -mt-1 cursor-pointer ml-[5.8rem] ${sortConfig.key === key && sortConfig.direction === "desc" ? "text-gray-200" : "text-black"}`}
+                      />
+                    </div>
+                  </div>
+                  {index !== 3 && <div className="absolute right-0 top-1/2 transform -translate-y-1/2 h-9 border-l border-black"></div>} {/* Separator between columns */}
+                </th>
+              ))}
+              <th className="p-3 text-center font-semibold">ACTIONS</th> {/* Added the "ACTIONS" header */}
             </tr>
           </thead>
           <tbody>
             {currentReviews.length > 0 ? (
               currentReviews.map((review, index) => (
-                <tr
-                  key={index}
-                  className="hover:bg-gray-100 border-b border-gray-200"
-                >
+                <tr key={index} className="hover:bg-gray-100 border-b border-gray-200">
                   <td className="p-3 text-center">{review.reviewId}</td>
                   <td className="p-3 text-center">{review.expert}</td>
                   <td className="p-3 text-center">{review.rating}</td>
@@ -176,21 +161,21 @@ const Review = () => {
                       onClick={() => handleAction("approve", review.reviewId)}
                       className="bg-[#60DF7C] text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
                     >
-                      <CheckCircle size={18} />
+                      <Check size={18} strokeWidth={2} className="text-white" />
                     </button>
                     {/* Reject Button */}
                     <button
                       onClick={() => handleAction("reject", review.reviewId)}
                       className="bg-[#FF2A2A] text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
                     >
-                      <XCircle size={18} />
+                      <X size={18} strokeWidth={2} className="text-white" />
                     </button>
                     {/* Flag Button */}
                     <button
                       onClick={() => handleAction("flag", review.reviewId)}
                       className="bg-black text-white px-3 py-2 rounded-lg text-lg cursor-pointer"
                     >
-                      <Flag size={18} />
+                      <Flag size={18} strokeWidth={2} className="text-white" />
                     </button>
                   </td>
                 </tr>
@@ -213,46 +198,104 @@ const Review = () => {
 
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
-          <div className="flex gap-6 p-2 border rounded-lg bg-white">
+          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
+            {/* Previous Button */}
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg ${
-                currentPage === 1
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-red-500"
-              }`}
+              className={`p-2 rounded-lg ${currentPage === 1
+                ? "text-gray-500 cursor-not-allowed"
+                : "text-red-500"
+                }`}
             >
               <MdKeyboardArrowLeft size={20} />
             </button>
 
-            {/* Pagination Numbers */}
-            {[...Array(Math.ceil(filteredReviews.length / reviewsPerPage)).keys()].map(
-              (number) => (
-                <button
-                  key={number + 1}
-                  onClick={() => paginate(number + 1)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-base ${
-                    currentPage === number + 1
-                      ? "bg-red-500 text-white"
-                      : "text-[#FA9E93] bg-white"
-                  }`}
-                >
-                  {number + 1}
-                </button>
-              )
-            )}
+            {/* Page Numbers with Ellipsis */}
+            {(() => {
+              const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
+              const pages = [];
 
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+              } else {
+                pages.push(
+                  <button
+                    key={1}
+                    onClick={() => paginate(1)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === 1
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    1
+                  </button>
+                );
+
+                if (currentPage > 3) {
+                  pages.push(<span key="ellipsis1" className="text-gray-500">...</span>);
+                }
+
+                for (
+                  let i = Math.max(2, currentPage - 1);
+                  i <= Math.min(totalPages - 1, currentPage + 1);
+                  i++
+                ) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+
+                if (currentPage < totalPages - 2) {
+                  pages.push(<span key="ellipsis2" className="text-gray-500">...</span>);
+                }
+
+                pages.push(
+                  <button
+                    key={totalPages}
+                    onClick={() => paginate(totalPages)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === totalPages
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    {totalPages}
+                  </button>
+                );
+              }
+              return pages;
+            })()}
+
+            {/* Next Button */}
             <button
               onClick={() => paginate(currentPage + 1)}
-              disabled={
-                currentPage === Math.ceil(filteredReviews.length / reviewsPerPage)
-              }
-              className={`p-2 rounded-lg ${
-                currentPage === Math.ceil(filteredReviews.length / reviewsPerPage)
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-red-500"
-              }`}
+              disabled={currentPage === Math.ceil(filteredReviews.length / reviewsPerPage)}
+              className={`p-2 rounded-lg ${currentPage === Math.ceil(filteredReviews.length / reviewsPerPage)
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-red-500"
+                }`}
             >
               <MdKeyboardArrowRight size={20} />
             </button>

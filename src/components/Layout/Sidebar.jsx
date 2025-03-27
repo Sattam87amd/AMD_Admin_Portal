@@ -45,7 +45,7 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div className="w-full h-auto bg-[#E6E6E6] p-4 rounded-3xl">
+    <div className="w-full h-auto bg-[#E6E6E6] p-4 rounded-3xl ml-3">
       <div className="space-y-2">
         {/* Sidebar Button Component */}
         {[ 
