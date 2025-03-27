@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";  // Import useRouter for routing
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
@@ -8,18 +9,18 @@ import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { Check, X, User } from "lucide-react";
 
 const PendingExpertsRequest = () => {
+  const router = useRouter();  // Initialize router for navigation
   const [experts, setExperts] = useState([]);
   const [filteredExperts, setFilteredExperts] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUsername, setSelectedUsername] = useState("");  // Declare selectedUsername state
   const [currentPage, setCurrentPage] = useState(1);
+  const [visiblePages, setVisiblePages] = useState([]);  // Added visiblePages state
   const itemsPerPage = 6;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
-  const [rotationCount, setRotationCount] = useState(0);
-  const [visiblePages, setVisiblePages] = useState([]);
-  const [selectedUsername, setSelectedUsername] = useState("");
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -61,15 +62,15 @@ const PendingExpertsRequest = () => {
       tempExperts = tempExperts.filter((expert) => expert.status === selectedStatus);
     }
 
-    if (searchQuery) {
+    if (selectedUsername) {
       tempExperts = tempExperts.filter((expert) =>
-        expert.country.toLowerCase().includes(searchQuery.toLowerCase())
+        expert.username.toLowerCase().includes(selectedUsername.toLowerCase())  // Filter by username
       );
     }
 
     setFilteredExperts(tempExperts);
     setCurrentPage(1);
-  }, [selectedCountry, selectedStatus, searchQuery, experts]);
+  }, [selectedCountry, selectedStatus, searchQuery, selectedUsername, experts]);
 
   const generatePagination = () => {
     const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
@@ -146,47 +147,10 @@ const PendingExpertsRequest = () => {
     writeFile(wb, "PendingExperts.xlsx");
   };
 
-  const PaginationControls = () => (
-    <div className="flex items-center justify-center mt-6">
-      {/* Total count above pagination */}
-      <div className="text-red-500 mb-4">
-        {filteredExperts.length} Total
-      </div>
-
-      {/* Pagination controls */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={prevPage}
-          disabled={currentPage === 1}
-          className={`${currentPage === 1 ? "text-gray-300" : "text-gray-600"}`}
-        >
-          <IoIosArrowBack size={20} />
-        </button>
-
-        {visiblePages.map((page, index) => (
-          page === "..." ? (
-            <span key={index} className="px-3">...</span>
-          ) : (
-            <button
-              key={index}
-              onClick={() => paginate(page)}
-              className={`w-8 h-8 rounded ${currentPage === page ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'}`}
-            >
-              {page}
-            </button>
-          )
-        ))}
-
-        <button
-          onClick={nextPage}
-          disabled={currentPage === totalPages}
-          className={`p-2 ${currentPage === totalPages ? 'text-red-500' : 'text-gray-600'}`}
-        >
-          <IoIosArrowForward size={20} />
-        </button>
-      </div>
-    </div>
-  );
+  const handleProfileClick = (username) => {
+    // Navigate to the profile page (for now it's a placeholder)
+    router.push("/pendingexpertsrequestprofile");
+  };
 
   return (
     <div className="flex justify-center w-full p-6 bg-white">
@@ -298,6 +262,7 @@ const PendingExpertsRequest = () => {
                     )}
                     <button
                       className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-black text-white rounded-md"
+                      onClick={() => handleProfileClick(expert.username)}  // Add onClick handler for profile icon
                     >
                       <User size={28} strokeWidth={2} className="text-white" />
                     </button>
@@ -308,7 +273,113 @@ const PendingExpertsRequest = () => {
           </tbody>
         </table>
 
-        <PaginationControls />
+        {/* Pagination Controls */}
+        <div className="text-center text-sm mt-4 text-[#FA9E93]">
+          {filteredExperts.length}{" "}
+          {filteredExperts.length === 1 ? "Result" : "Total"}
+        </div>
+
+        <div className="flex justify-center items-center mt-4">
+          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
+            <button
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg ${currentPage === 1
+                ? "text-gray-500 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <IoIosArrowBack size={20} />
+            </button>
+
+            {(() => {
+              const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
+              const pages = [];
+
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+              } else {
+                pages.push(
+                  <button
+                    key={1}
+                    onClick={() => paginate(1)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === 1
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    1
+                  </button>
+                );
+
+                if (currentPage > 3) {
+                  pages.push(<span key="ellipsis1" className="text-gray-500">...</span>);
+                }
+
+                for (
+                  let i = Math.max(2, currentPage - 1);
+                  i <= Math.min(totalPages - 1, currentPage + 1);
+                  i++
+                ) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+
+                if (currentPage < totalPages - 2) {
+                  pages.push(<span key="ellipsis2" className="text-gray-500">...</span>);
+                }
+
+                pages.push(
+                  <button
+                    key={totalPages}
+                    onClick={() => paginate(totalPages)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === totalPages
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    {totalPages}
+                  </button>
+                );
+              }
+              return pages;
+            })()}
+
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === Math.ceil(filteredExperts.length / itemsPerPage)}
+              className={`p-2 rounded-lg ${currentPage === Math.ceil(filteredExperts.length / itemsPerPage)
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <IoIosArrowForward size={20} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
