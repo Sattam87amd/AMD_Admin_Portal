@@ -3,22 +3,21 @@
 import React, { useEffect, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
-import { MdEdit } from "react-icons/md"; // Edit Icon
-import { MdDelete } from "react-icons/md"; // Delete Icon
-import { RiHistoryLine } from "react-icons/ri"; // History Icon
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io"; // Import IoIosArrowBack and IoIosArrowForward
+import { MdEdit } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
+import { RiHistoryLine } from "react-icons/ri";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
-  const [lastActive, setLastActive] = useState("All Time");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // Default items per page
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // Popup and History state
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -45,16 +44,45 @@ const UserManagement = () => {
       status: "Deactivate",
       phone: "+9876543210",
     },
-    // Add more users as needed
+    {
+      country: "United States",
+      name: "John",
+      username: "JohnDoe",
+      email: "john.doe@example.com",
+      status: "Active",
+      phone: "+1234567890",
+    },
+    {
+      country: "Canada",
+      name: "Alice",
+      username: "Alice2023",
+      email: "alice@example.com",
+      status: "Deactivate",
+      phone: "+1122334455",
+    },
+    {
+      country: "Germany",
+      name: "Hans",
+      username: "HansG",
+      email: "hans.g@example.com",
+      status: "Active",
+      phone: "+49876543210",
+    },
+    {
+      country: "France",
+      name: "Marie",
+      username: "MarieF",
+      email: "marie.f@example.com",
+      status: "Active",
+      phone: "+33123456789",
+    },
   ];
 
-  // Dummy booking history data
   const dummyHistory = [
     { bookingId: "Bk-001", date: "2025-02-10", service: "Consultation", status: "Completed", amount: "$150" },
     { bookingId: "Bk-002", date: "2025-02-10", service: "Consultation", status: "Pending", amount: "$75" },
   ];
 
-  // Fetch country data from API
   useEffect(() => {
     const fetchCountries = async () => {
       try {
@@ -76,11 +104,9 @@ const UserManagement = () => {
     const storedUsers = JSON.parse(localStorage.getItem("users")) || dummyUsers;
     setUsers(storedUsers);
     setFilteredUsers(storedUsers);
-
     localStorage.setItem("users", JSON.stringify(storedUsers));
   }, []);
 
-  // Filter users based on selected country or search query
   useEffect(() => {
     let tempUsers = [...users];
 
@@ -95,19 +121,16 @@ const UserManagement = () => {
     }
 
     setFilteredUsers(tempUsers);
-    setCurrentPage(1); // Reset to the first page whenever filters change
+    setCurrentPage(1);
   }, [selectedCountry, searchQuery, users]);
 
-  // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Download Data to Excel
   const downloadExcel = () => {
     const ws = utils.json_to_sheet(filteredUsers);
     const wb = utils.book_new();
@@ -115,17 +138,15 @@ const UserManagement = () => {
     writeFile(wb, "UserManagement.xlsx");
   };
 
-  // Open Popup on Edit Button Click
   const handleEdit = (user) => {
     setCurrentUser(user);
     setIsPopupOpen(true);
   };
 
-  // Handle Update - Save changes to localStorage
   const handleUpdate = () => {
     const updatedUsers = users.map((user) =>
       user.username === currentUser.username
-        ? { ...user, email: currentUser.email, phone: currentUser.phone }
+        ? { ...user, ...currentUser }
         : user
     );
     setUsers(updatedUsers);
@@ -133,33 +154,16 @@ const UserManagement = () => {
     setIsPopupOpen(false);
   };
 
-  // Handle History Popup
   const handleHistory = (user) => {
-    setUserHistory(dummyHistory); // Load dummy booking history
+    setUserHistory(dummyHistory);
     setIsHistoryPopupOpen(true);
   };
 
-  // Open Delete Popup on Delete Button Click
   const handleDelete = (user) => {
     setUserToDelete(user);
     setIsDeletePopupOpen(true);
   };
 
-  // Handle Deactivate/Activate - Toggle user status
-  const handleStatusToggle = () => {
-    const updatedStatus =
-      currentUser.status === "Active" ? "Deactivate" : "Active";
-    const updatedUsers = users.map((user) =>
-      user.username === currentUser.username
-        ? { ...user, status: updatedStatus }
-        : user
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setIsPopupOpen(false);
-  };
-
-  // Handle Delete Confirmation
   const handleConfirmDelete = () => {
     const updatedUsers = users.filter(
       (user) => user.username !== userToDelete.username
@@ -172,13 +176,12 @@ const UserManagement = () => {
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
-        <h1 className="text-2xl font-bold mb-4 text-[#191919] ">USER MANAGEMENT</h1>
+        <h1 className="text-2xl font-bold mb-4 text-[#191919]">USER MANAGEMENT</h1>
 
         {/* Filter Section */}
         <div className="flex gap-4 items-center mb-6">
-          {/* Country Dropdown */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">Select Country</label>
+            <label className="block mb-1 text-md text-[#191919]">Select Country</label>
             <select
               className="p-2 rounded-full border border-gray-300 w-44 bg-gray-100 text-[#C91416] focus:outline-none"
               value={selectedCountry}
@@ -193,9 +196,8 @@ const UserManagement = () => {
             </select>
           </div>
 
-          {/* Search by Country */}
           <div>
-            <label className="block mb-1 text-md text-[#191919] ">Search by Country</label>
+            <label className="block mb-1 text-md text-[#191919]">Search by Country</label>
             <div className="relative">
               <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
                 <Search className="m-1 text-white" size={16} />
@@ -209,7 +211,6 @@ const UserManagement = () => {
             </div>
           </div>
 
-          {/* Download Button */}
           <div className="ml-auto mt-6">
             <button
               onClick={downloadExcel}
@@ -234,15 +235,23 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((user, index) => (
-              <tr key={index} className="hover:bg-gray-100">
-                <td className="p-2">{user.country}</td>
-                <td className="p-2">{user.name}</td>
-                <td className="p-2">{user.username}</td>
-                <td className="p-2">{user.email}</td>
-                <td className="p-2 text-center inline-block w-40 px-3 py-1 rounded-xl border">{user.status}</td>
-                <td className="p-2">{user.phone}</td>
-                <td className="p-2 flex gap-4">
+            {currentItems.map((user) => (
+              <tr key={user.username} className="hover:bg-gray-100">
+                <td className="p-2 text-center">{user.country}</td>
+                <td className="p-2 text-center">{user.name}</td>
+                <td className="p-2 text-center">{user.username}</td>
+                <td className="p-2 text-center">{user.email}</td>
+                <td className="p-2 text-center">
+                  <div className={`inline-block w-40 px-3 py-1 rounded-xl border ${
+                    user.status === 'Active' 
+                      ? 'bg-green-100 border-green-300' 
+                      : 'bg-red-100 border-red-300'
+                  }`}>
+                    {user.status}
+                  </div>
+                </td>
+                <td className="p-2 text-center">{user.phone}</td>
+                <td className="p-2 flex gap-4 justify-center">
                   <button
                     className="text-black border border-black w-6 h-6 rounded-md"
                     onClick={() => handleEdit(user)}
@@ -308,46 +317,76 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* Booking History Popup */}
-      {isHistoryPopupOpen && (
+      {/* Edit Popup */}
+      {isPopupOpen && (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
-          <div className="bg-white p-6 rounded-2xl w-[50vw] shadow-lg opacity-[150%] border border-white">
-            <h2 className="text-xl font-bold mb-4">Booking History</h2>
-            <table className="w-full rounded-md border border-[#D9D9D9] shadow-md">
-              <thead className="border-y-2 border-[#D9D9D9] bg-[#D9D9D9]">
-                <tr>
-                  <th className="p-2 text-left">Booking Id</th>
-                  <th className="p-2 text-left">Date</th>
-                  <th className="p-2 text-left">Service</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userHistory.map((booking) => (
-                  <tr key={booking.bookingId}>
-                    <td className="p-2">{booking.bookingId}</td>
-                    <td className="p-2">{booking.date}</td>
-                    <td className="p-2">{booking.service}</td>
-                    <td
-                      className={`p-2 border text-center ${booking.status === "Completed"
-                        ? "bg-[#4CB269] text-white"
-                        : "bg-[#FFA629] text-white"
-                      }`}
-                    >
-                      {booking.status}
-                    </td>
-                    <td className="p-2">{booking.amount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="text-right">
-              <button
-                onClick={() => setIsHistoryPopupOpen(false)}
-                className="text-black mt-4 px-6 py-2 rounded-lg border"
+          <div className="bg-white p-6 rounded-2xl w-[50vw] shadow-lg border border-white">
+            <h2 className="text-xl font-bold mb-4">Edit User</h2>
+            <div className="mb-4">
+              <label className="block mb-2">Email</label>
+              <input
+                type="email"
+                className="p-2 w-full border border-gray-300 rounded-lg"
+                value={currentUser?.email || ""}
+                onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Phone</label>
+              <input
+                type="tel"
+                className="p-2 w-full border border-gray-300 rounded-lg"
+                value={currentUser?.phone || ""}
+                onChange={(e) => setCurrentUser({ ...currentUser, phone: e.target.value })}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Status</label>
+              <select
+                value={currentUser?.status}
+                onChange={(e) => setCurrentUser({ ...currentUser, status: e.target.value })}
+                className="p-2 w-full border border-gray-300 rounded-lg"
               >
-                Close
+                <option value="Active">Active</option>
+                <option value="Deactivate">Deactivate</option>
+              </select>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={handleUpdate}
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg mr-2"
+              >
+                Update
+              </button>
+              <button
+                onClick={() => setIsPopupOpen(false)}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Popup */}
+      {isDeletePopupOpen && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-6 rounded-2xl w-[50vw] shadow-lg border border-white">
+            <h2 className="text-xl font-bold mb-4">Delete User</h2>
+            <p className="mb-4">Are you sure you want to delete this user?</p>
+            <div className="flex justify-end">
+              <button
+                onClick={handleConfirmDelete}
+                className="px-6 py-2 bg-red-500 text-white rounded-lg mr-2"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setIsDeletePopupOpen(false)}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg"
+              >
+                Cancel
               </button>
             </div>
           </div>
