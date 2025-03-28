@@ -7,7 +7,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
+import { utils, writeFile } from "xlsx"; // For Excel download
 
 const SessionManagement = () => {
   // State for active session type (Action Session or Session History)
@@ -90,25 +90,30 @@ const SessionManagement = () => {
   ];
 
   // Filter sessions based on status and search query
-  const filteredSessions = dummySessions.filter((session) => {
-    // Check if any of the fields match the search query
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      session.sessionId.toLowerCase().includes(searchLower) ||
-      session.user.toLowerCase().includes(searchLower) ||
-      session.expert.toLowerCase().includes(searchLower) ||
-      session.date.toLowerCase().includes(searchLower) ||
-      session.time.toLowerCase().includes(searchLower)
-    );
-  }).filter((session) => {
-    if (statusFilter === "All Status") return true;
-    return session.status === statusFilter;
-  });
+  const filteredSessions = dummySessions
+    .filter((session) => {
+      // Check if any of the fields match the search query
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        session.sessionId.toLowerCase().includes(searchLower) ||
+        session.user.toLowerCase().includes(searchLower) ||
+        session.expert.toLowerCase().includes(searchLower) ||
+        session.date.toLowerCase().includes(searchLower) ||
+        session.time.toLowerCase().includes(searchLower)
+      );
+    })
+    .filter((session) => {
+      if (statusFilter === "All Status") return true;
+      return session.status === statusFilter;
+    });
 
   // Pagination logic
   const indexOfLastSession = currentPage * sessionsPerPage;
   const indexOfFirstSession = indexOfLastSession - sessionsPerPage;
-  const currentSessions = filteredSessions.slice(indexOfFirstSession, indexOfLastSession);
+  const currentSessions = filteredSessions.slice(
+    indexOfFirstSession,
+    indexOfLastSession
+  );
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -134,45 +139,18 @@ const SessionManagement = () => {
     setSelectedSession(null);
   };
 
-  // Export sessions to CSV format
-  const exportToCSV = () => {
-    const headers = [
-      "Session ID",
-      "User",
-      "Expert",
-      "Date",
-      "Time",
-      "Status",
-      "Amount"
-    ];
-  
-    const rows = filteredSessions.map(session => [
-      session.sessionId,
-      session.user,
-      session.expert,
-      session.date,
-      session.time,
-      session.status,
-      session.amount
-    ]);
-  
-    let csvContent = "data:text/csv;charset=utf-8," 
-                     + headers.join(",") + "\n"
-                     + rows.map(row => row.join(",")).join("\n");
-  
-    // Encode CSV content
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "session_history.csv"); // Name of the file to download
-    link.click();
+  // Export sessions to Excel format
+  const exportToExcel = () => {
+    const ws = utils.json_to_sheet(filteredSessions);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Sessions");
+    writeFile(wb, "session_history.xlsx");
   };
-  
+
   const Sessionedirect = () => {
     // Redirect to another page
     router.push("/components/SessionManagement/SessionHistory"); // Replace with your desired path
   };
-
 
   return (
     <div className="flex justify-center w-full min-h-screen p-6 bg-white overflow-x-scroll">
@@ -187,11 +165,12 @@ const SessionManagement = () => {
           >
             Action Session
           </button>
-          
           <button
             className={`py-2 px-6 ${activeSession === "Session History" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
-          ><Link href="/sessionhistory">
-            Session History</Link>
+          >
+            <Link href="/sessionhistory">
+              Session History
+            </Link>
           </button>
         </div>
 
@@ -218,22 +197,34 @@ const SessionManagement = () => {
           <div className="relative mt-8 sm:mt-0">
             <button
               onClick={toggleDropdown}
-              className="p-2 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-2"
+              className="p-2 mt-6 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-20"
             >
               {statusFilter} <RiArrowDropDownLine size={20} />
             </button>
             {isDropdownOpen && (
               <div className="absolute bg-white border border-gray-300 w-40 mt-2 rounded-lg shadow-lg">
-                <button onClick={() => handleStatusSelect("All Status")} className="px-4 py-2 text-sm w-full text-left">
+                <button
+                  onClick={() => handleStatusSelect("All Status")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
                   All Status
                 </button>
-                <button onClick={() => handleStatusSelect("Ongoing")} className="px-4 py-2 text-sm w-full text-left">
+                <button
+                  onClick={() => handleStatusSelect("Ongoing")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
                   Ongoing
                 </button>
-                <button onClick={() => handleStatusSelect("Completed")} className="px-4 py-2 text-sm w-full text-left">
+                <button
+                  onClick={() => handleStatusSelect("Completed")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
                   Completed
                 </button>
-                <button onClick={() => handleStatusSelect("Canceled")} className="px-4 py-2 text-sm w-full text-left">
+                <button
+                  onClick={() => handleStatusSelect("Canceled")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
                   Canceled
                 </button>
               </div>
@@ -243,14 +234,12 @@ const SessionManagement = () => {
 
         {/* CSV Component */}
         <div className="flex justify-end gap-4 sm:-mt-24 pb-10 mb-10">
-          {/* Export as CSV Format Text */}
           <div className="flex items-center text-red-500">
-            <span className="text-sm">Export as CSV Format</span>
+            {/* <span className="text-sm">Export as Excel Format</span> */}
           </div>
 
-          {/* Download Button */}
           <div>
-            <button onClick={exportToCSV} className="p-2 bg-black text-white rounded flex items-center">
+            <button onClick={exportToExcel} className="p-2 bg-black text-white rounded flex items-center">
               <Download size={16} />
             </button>
           </div>
@@ -353,7 +342,7 @@ const SessionManagement = () => {
             </div>
 
             {/* Horizontal Table Layout */}
-            <div className="space-y-2"> {/* Reduced spacing between rows */}
+            <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-[#191919] font-medium w-1/3">Session Id</span>
                 <span className="font-normal w-2/3 text-right">{selectedSession.sessionId}</span>
@@ -386,10 +375,7 @@ const SessionManagement = () => {
 
             {/* Close Button */}
             <div className="mt-6 text-center">
-              <button
-                onClick={closePopup}
-                className="p-2 bg-gray-500 text-white rounded-md"
-              >
+              <button onClick={closePopup} className="p-2 bg-gray-500 text-white rounded-md">
                 Close
               </button>
             </div>
