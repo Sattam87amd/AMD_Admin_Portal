@@ -34,10 +34,10 @@ const Page = () => {
         </div>
       </div>
 
-       <div className='w-[78.07rem] ml-[16rem]'>  
+      {/* Footer at Bottom */}
+       <div className=' ml-[16rem] bottom-0'>  
       <Footer />
       </div>
-      {/* Footer at Bottom */}
     </div>
   )
 }

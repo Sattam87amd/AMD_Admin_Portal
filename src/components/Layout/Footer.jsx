@@ -6,14 +6,14 @@ const Footer = () => {
         <p>Copyright © 2025 AMD. All rights reserved.</p>
         <div className="flex items-center space-x-2">
           <a
-            href="/terms-of-use"
+            href=""
             className="text-blue-600 hover:underline"
           >
             Terms of Use
           </a>
           <span className="text-gray-400">|</span>
           <a
-            href="/privacy-policy"
+            href=""
             className="text-blue-600 hover:underline"
           >
             Privacy Policy
