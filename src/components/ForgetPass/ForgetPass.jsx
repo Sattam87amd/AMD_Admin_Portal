@@ -54,7 +54,7 @@ function UserForgotPasswordPage() {
     }
 
     // Password reset logic or API call goes here
-    router.push("/login");
+    router.push("/");
   };
 
   return (
@@ -112,7 +112,7 @@ function UserForgotPasswordPage() {
 
           {/* Input Fields */}
           <div className="mt-8 space-y-6">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-start">
             <label className="block text-sm font-medium">New Password</label>
               <input
                 type="password"
@@ -126,7 +126,9 @@ function UserForgotPasswordPage() {
               )}
             </div>
 
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-start">
+            <label className="block text-sm font-medium">Confirm Password</label>
+
               <input
               
                 type="password"

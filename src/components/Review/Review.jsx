@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation"; // For redirect
@@ -7,12 +7,12 @@ import { Download } from "lucide-react";
 import { Check, X, Flag } from "lucide-react";  // Updated import for Check and X icons
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { FaSortUp, FaSortDown } from "react-icons/fa"; // Import sort icons
+import { utils, writeFile } from "xlsx"; // For Excel download
 
 const Review = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 6;
-
   // Dummy review data
   const dummyReviews = [
     {
@@ -26,6 +26,54 @@ const Review = () => {
       expert: "john",
       rating: "5 STARS",
       content: "john.doe@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
+    },
+    {
+      reviewId: "A3J935",
+      expert: "alex",
+      rating: "3 STARS",
+      content: "alex@example.com",
     },
     {
       reviewId: "A3J935",
@@ -89,6 +137,35 @@ const Review = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Handle dropdown toggle
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+
+  // Handle status selection
+  const handleStatusSelect = (status) => {
+    setStatusFilter(status);
+    setIsDropdownOpen(false); // Close dropdown after selecting
+  };
+
+  // Open Popup with session details
+  const openPopup = (session) => {
+    setSelectedSession(session);
+    setIsPopupOpen(true);
+  };
+
+  // Close the popup
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedSession(null);
+  };
+
+  // Export sessions to Excel format
+  const exportToExcel = () => {
+    const ws = utils.json_to_sheet(filteredReviews);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Reviews");
+    writeFile(wb, "reviews.xlsx");
+  };
+
   return (
     <div className="flex justify-center w-full p-6 bg-white">
       <div className="w-11/12">
@@ -96,14 +173,16 @@ const Review = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-[#191919]">REVIEWS/FEEDBACK</h1>
 
-          {/* Export as CSV Button */}
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 text-sm cursor-pointer"
-          >
-            <Download className="text-black" size={16} />
-            Export as CSV Format
-          </button>
+          {/* Export as Excel Button */}
+           <div className="ml-auto mt-6">
+                      <button
+                        onClick={exportToExcel}
+                        className="p-2 bg-black text-white rounded flex items-center gap-2"
+                      >
+                        <Download size={16} />
+                      </button>
+                    
+                  </div>
         </div>
 
         {/* Search Bar */}

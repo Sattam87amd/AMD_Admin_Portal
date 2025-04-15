@@ -13,7 +13,7 @@ const Experts = () => {
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 6;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
   const [selectedSessions, setSelectedSessions] = useState("All");
   const [selectedUsername, setSelectedUsername] = useState("");
@@ -40,6 +40,9 @@ const Experts = () => {
       { country: "India", name: "Lakhan", username: "Lakhan123", email: "lakhan123@gmail.com", phone: "+9876543210", liveSessions: 1 },
       { country: "United Kingdom", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com", phone: "+9876543210", liveSessions: 2 },
       { country: "Netherlands", name: "Jiteksi", username: "jiteksi123", email: "jiteksi123@gmail.com", phone: "+9876543210", liveSessions: 3 },
+      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
+      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
+      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
       { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
     ];
 
@@ -102,7 +105,7 @@ const Experts = () => {
   };
 
   return (
-    <div className="flex justify-center w-full p-6 bg-white">
+    <div className="flex justify-center w-full h-full p-6 bg-white">
       <div className="w-11/12">
         <h1 className="text-3xl font-bold mb-6 text-[#191919]">EXPERTS</h1>
 

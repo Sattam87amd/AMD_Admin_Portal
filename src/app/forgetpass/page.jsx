@@ -1,7 +1,7 @@
 
 import React from 'react'
 
-import UserForgotPasswordPage from '@/components/Register/Register';
+import UserForgotPasswordPage from '@/components/ForgetPass/ForgetPass';
 
 const Page = () => {
   return (

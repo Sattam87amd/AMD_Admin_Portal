@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Inter } from "next/font/google";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+// import { Link } from "lucide-react";
+import Link from "next/link";
 
 const interFont = Inter({
   subsets: ["latin"],
@@ -57,7 +59,7 @@ function UserLoginPage() {
       return;
     }
 
-    router.push("/userpanel/dashboard");
+    router.push("/dashboard");
   };
 
   return (
@@ -143,20 +145,18 @@ function UserLoginPage() {
             {formError && <p className="text-red-500 text-sm text-center">{formError}</p>}
 
             {/* Forgot Password */}
-            <a
-              href="#"
+            <Link
+              href="/forgetpass"
               className="text-sm text-gray-600 hover:text-black block text-center mt-2"
             >
               Forgot Password?
-            </a>
-
+            </Link>
             {/* Submit Button */}
             <button
-              className={`w-[40%] py-3 rounded-lg transition mx-auto block ${
-                email && password.length >= 6
+              className={`w-[40%] py-3 rounded-lg transition mx-auto block ${email && password.length >= 6
                   ? "bg-black text-white hover:bg-gray-800"
                   : "bg-black text-white cursor-not-allowed"
-              }`}
+                }`}
               onClick={handleSubmit}
               disabled={!email || password.length < 6}
             >
