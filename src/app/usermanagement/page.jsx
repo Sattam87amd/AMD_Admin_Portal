@@ -21,18 +21,18 @@ const Page = () => {
         <div className="hidden lg:block w-1 bg-red-600 ml-8" />
 
         {/* Main Content (Right) */}
-        <div className="flex-1  overflow-auto">
+        <div className="flex-1 overflow-auto">
           <UserManagement />
-          
-          <Footer />
         </div>
-        
       </div>
 
-      {/* Footer at Bottom */}
-      
+      {/* Footer at the bottom */}
+      {/* <div className="mt-auto w-[calc(80%+3.225rem)] ml-auto"> */}
+      <div className='fixed bottom-0 w-[88.5rem] ml-[18.3rem]'>
+        <Footer />
+      </div>
     </div>
   )
 }
 
-export default Page
+export default Page;

@@ -24,7 +24,7 @@ const Page = () => {
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
           <Withdrawal />
-          <div >
+          <div className='fixed bottom-0 w-[88.5rem]'>
           
           <Footer />
           </div>

@@ -148,22 +148,61 @@ const SessionHistory = () => {
           </button>
         </div>
 
-        {/* Search Bar and Status Dropdown */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-6">
-          <div className="relative w-full sm:w-1/3">
-            <h2 className="text-[#191919]">Search by Session</h2>
-            <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
-              <Search className="m-1 text-white" size={16} />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-2 rounded-xl border border-gray-300 w-full bg-gray-100 text-gray-700 focus:outline-none pl-10"
-              placeholder="Search by Session"
-            />
-          </div>
-        </div>
+<div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-6">
+  {/* Search Bar */}
+  <div className="relative w-full sm:w-1/3">
+    <h2 className="text-[#191919]">Search by Session</h2>
+    <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
+      <Search className="m-1 text-white" size={16} />
+    </div>
+    <input
+      type="text"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="p-2 rounded-xl border border-gray-300 w-full bg-gray-100 text-gray-700 focus:outline-none pl-10"
+      placeholder="Search by Session"
+    />
+  </div>
+
+  {/* Status Dropdown */}
+  <div className="relative mt-8 sm:mt-0 sm:w-1/3">
+    <button
+      onClick={toggleDropdown}
+      className="p-2 mt-6 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-20"
+    >
+      {statusFilter} <RiArrowDropDownLine size={20} />
+    </button>
+    {isDropdownOpen && (
+      <div className="absolute bg-white border border-gray-300 w-40 mt-2 rounded-lg shadow-lg">
+        <button
+          onClick={() => handleStatusSelect("All Status")}
+          className="px-4 py-2 text-sm w-full text-left"
+        >
+          All Status
+        </button>
+        <button
+          onClick={() => handleStatusSelect("Ongoing")}
+          className="px-4 py-2 text-sm w-full text-left"
+        >
+          Ongoing
+        </button>
+        <button
+          onClick={() => handleStatusSelect("Completed")}
+          className="px-4 py-2 text-sm w-full text-left"
+        >
+          Completed
+        </button>
+        <button
+          onClick={() => handleStatusSelect("Canceled")}
+          className="px-4 py-2 text-sm w-full text-left"
+        >
+          Canceled
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
 
         {/* Export as excel Button */}
         <div className="flex justify-end gap-4 sm:-mt-24 pb-10 mb-10">
@@ -208,6 +247,13 @@ const SessionHistory = () => {
             </tbody>
           </table>
         </div>
+
+        <div className="flex justify-center items-center mt-4">
+  {/* Display Total Sessions */}
+  <div className="text-md text-[red] mb-2">
+    Total: {filteredSessions.length}
+  </div>
+</div>
 
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">

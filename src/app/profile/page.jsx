@@ -26,8 +26,9 @@ const Page = () => {
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
           <Profile />
-          <div className="w-[78.07rem] ml-[17rem]">
+          {/* <div className="w-[78.07rem] ml-[17rem]"> */}
           {/* //fixed inset-x-0 w-[77rem] ml-[16rem] bottom-0  p-4 shadow-lg */}
+          <div className='fixed bottom-0 w-[88rem]'>
           <Footer />
           </div>
         </div>

@@ -327,6 +327,13 @@ const UserManagement = () => {
           </tbody>
         </table>
 
+        <div className="flex justify-center items-center mt-4">
+  {/* Display Total Sessions */}
+  <div className="text-md text-[red] mb-2">
+    Total: {filteredUsers.length}
+  </div>
+</div>
+
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
           <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">

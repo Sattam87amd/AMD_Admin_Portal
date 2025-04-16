@@ -294,6 +294,12 @@ const SessionManagement = () => {
           </div>
         </div>
 
+        <div className="flex justify-center items-center mt-4 mb-4">
+  <div className="text-md text-[red]">
+    Totals: {filteredSessions.length}
+  </div>
+</div>
+
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
           <div className="flex gap-6 p-2 border rounded-lg bg-white">

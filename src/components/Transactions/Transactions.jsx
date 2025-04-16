@@ -33,6 +33,7 @@ const Transaction = () => {
     { transactionId: "B434-050", user: "392230", expertBooked: "Raivan", amount: "$210", date: "2024-12-10", status: "BOOKED" },
     { transactionId: "B434-051", user: "392231", expertBooked: "John", amount: "$175", date: "2024-11-05", status: "BOOKED" },
     { transactionId: "B434-052", user: "392232", expertBooked: "Sarah", amount: "$320", date: "2024-08-22", status: "BOOKED" },
+    
   ];
 
   useEffect(() => {
