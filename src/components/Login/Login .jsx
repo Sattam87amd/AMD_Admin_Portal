@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 // import { Link } from "lucide-react";
 import Link from "next/link";
 import { RxCross2 } from "react-icons/rx";
+import axios from "axios";
 
 
 
@@ -16,55 +17,61 @@ const interFont = Inter({
 });
 
 function UserLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [formError, setFormError] = useState("");
 
-  // Handle email change
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    if (!value) {
-      setEmailError("Email is required.");
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
-      setEmailError("Invalid email address.");
-    } else {
-      setEmailError("");
-    }
-    setFormError("");
-  };
 
-  // Handle password change
-  const handlePasswordChange = (e) => {
-    const value = e.target.value;
-    setPassword(value);
-    if (!value) {
-      setPasswordError("Password is required.");
-    } else if (value.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
-    } else {
-      setPasswordError("");
-    }
-  };
+    const [email, setEmail]         = useState("");
+    const [password, setPassword]   = useState("");
+    const [emailError, setEmailError]     = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [formError, setFormError]       = useState("");
 
-  // Handle form submission
-  const handleSubmit = () => {
-    if (!email || !password) {
-      setFormError("Please fill in all required fields before proceeding.");
-      return;
-    }
-
-    if (emailError || passwordError) {
-      setFormError("Please correct errors before proceeding.");
-      return;
-    }
-
-    router.push("/dashboard");
-  };
-
+    const router = useRouter()
+  
+    const handleEmailChange = (e) => {
+      const v = e.target.value;
+      setEmail(v);
+      if (!v)          setEmailError("Email is required.");
+      else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v))
+                       setEmailError("Invalid email address.");
+      else             setEmailError("");
+      setFormError("");
+    };
+  
+    const handlePasswordChange = (e) => {
+      const v = e.target.value;
+      setPassword(v);
+      if (!v)          setPasswordError("Password is required.");
+      else if (v.length < 6)
+                       setPasswordError("Password must be at least 6 characters.");
+      else             setPasswordError("");
+      setFormError("");
+    };
+  
+    const handleSubmit = async () => {
+      if (!email || !password) {
+        setFormError("Please fill in all required fields before proceeding.");
+        return;
+      }
+      if (emailError || passwordError) {
+        setFormError("Please correct errors before proceeding.");
+        return;
+      }
+  
+      try {
+        const resp = await axios.post(
+          `http://localhost:5070/api/adminauth/login`,
+          { email, password }
+        );
+  
+       router.push("/dashboard");
+      } catch (err) {
+        const msg =
+          err.response?.data?.message ||
+          "Something went wrong. Please try again.";
+        setFormError(msg);
+      }
+    };
+  
   return (
     <div className={`min-h-screen flex ${interFont.variable}`}>
       {/* Left Section for Larger Screens */}

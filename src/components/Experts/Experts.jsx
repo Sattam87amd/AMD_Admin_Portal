@@ -5,6 +5,7 @@ import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import axios from "axios";
 
 const Experts = () => {
   const [experts, setExperts] = useState([]);
@@ -21,49 +22,44 @@ const Experts = () => {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch("https://restcountries.com/v3.1/all");
-        const data = await response.json();
-        const countryNames = data.map((country) => country.name.common).sort();
-        setCountries(["All", ...countryNames]);
+        const response = await fetch("http://localhost:5070/api/countries"); // Match your backend port
+        const countryNames = await response.json();
+        setCountries(countryNames);
       } catch (error) {
         console.error("Error fetching countries:", error);
       }
     };
-
+  
     fetchCountries();
   }, []);
 
+ 
+  
   useEffect(() => {
-    const dummyExperts = [
-      { country: "Belarus", name: "Ivan", username: "raivan", email: "radioxivan@gmail.com", phone: "+9876543210", liveSessions: 3 },
-      { country: "India", name: "Ram", username: "Ram123", email: "ram123@gmail.com", phone: "+9876543210", liveSessions: 2 },
-      { country: "India", name: "Lakhan", username: "Lakhan123", email: "lakhan123@gmail.com", phone: "+9876543210", liveSessions: 1 },
-      { country: "United Kingdom", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com", phone: "+9876543210", liveSessions: 2 },
-      { country: "Netherlands", name: "Jiteksi", username: "jiteksi123", email: "jiteksi123@gmail.com", phone: "+9876543210", liveSessions: 3 },
-      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
-      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
-      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
-      { country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", phone: "+9876543210", liveSessions: 1 },
-    ];
+    const fetchExperts = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5070/api/expertauth");
+        setExperts(data.data);
+        setFilteredExperts(data.data);
+      } catch (error) {
+        console.error("Error fetching experts:", error);
+      }
+    };
 
-    setExperts(dummyExperts);
-    setFilteredExperts(dummyExperts);
+    fetchExperts();
   }, []);
 
   useEffect(() => {
     let tempExperts = [...experts];
 
-    // Filter by country
     if (selectedCountry !== "All") {
       tempExperts = tempExperts.filter((expert) => expert.country === selectedCountry);
     }
 
-    // Filter by number of live sessions
     if (selectedSessions !== "All") {
       tempExperts = tempExperts.filter((expert) => expert.liveSessions === parseInt(selectedSessions));
     }
 
-    // Filter by username
     if (selectedUsername) {
       tempExperts = tempExperts.filter((expert) =>
         expert.username.toLowerCase().includes(selectedUsername.toLowerCase())
@@ -74,11 +70,9 @@ const Experts = () => {
     setCurrentPage(1);
   }, [selectedCountry, selectedSessions, selectedUsername, experts]);
 
+
   const sortTable = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
+    let direction = sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
 
     const sortedExperts = [...filteredExperts].sort((a, b) => {
       if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
@@ -172,7 +166,7 @@ const Experts = () => {
         <table className="w-[104%] border-collapse border border-white">
           <thead className="border-y-2 border-red-400 bg-white">
             <tr>
-              {["COUNTRY NAME", "NAME", "USERNAME", "EMAIL", "PHONE NUMBER", "COMPLETES LIVESESSIONS"].map((label, index) => (
+              {["COUNTRY NAME", "NAME", "LAST NAME", "EMAIL", "PHONE NUMBER", "COMPLETES LIVESESSIONS"].map((label, index) => (
                 <th key={index} className="p-3 text-left font-semibold cursor-pointer">
                   <div className="flex items-center gap-1">
                     <span>{label}</span>
@@ -190,8 +184,8 @@ const Experts = () => {
             {currentItems.map((expert, index) => (
               <tr key={index} className="hover:bg-gray-50 border-b border-gray-200">
                 <td className="p-3 text-center">{expert.country}</td>
-                <td className="text-center">{expert.name}</td>
-                <td className="text-center">{expert.username}</td>
+                <td className="text-center">{expert.firstName}</td>
+                <td className="text-center">{expert.lastName}</td>
                 <td className="text-center">{expert.email}</td>
                 <td className="text-center">{expert.phone}</td>
                 <td className="text-center">{String(expert.liveSessions).padStart(2, "0")}</td>

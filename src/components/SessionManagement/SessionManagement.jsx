@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, Search } from "lucide-react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoEyeOutline } from "react-icons/io5";
@@ -8,91 +8,67 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { utils, writeFile } from "xlsx"; // For Excel download
+import axios from "axios";
 
 const SessionManagement = () => {
-  // State for active session type (Action Session or Session History)
+  const [sessions, setSessions] = useState([]); // <-- Updated
+  const [loading, setLoading] = useState(true);
   const [activeSession, setActiveSession] = useState("Action Session");
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // State for popup visibility and selected session
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const sessionsPerPage = 5;
 
-  // Dummy session data
-  const dummySessions = [
-    {
-      sessionId: "#01",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      status: "Completed",
-      amount: "$150",
-      cancelReason: null,
-    },
-    {
-      sessionId: "#02",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      status: "Ongoing",
-      amount: "$100",
-      cancelReason: null,
-    },
-    {
-      sessionId: "#03",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      status: "Completed",
-      amount: "$120",
-      cancelReason: null,
-    },
-    {
-      sessionId: "#04",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      status: "Canceled",
-      amount: "$0",
-      cancelReason: "Canceled by Expert",
-    },
-    {
-      sessionId: "#05",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      status: "Completed",
-      amount: "$150",
-      cancelReason: null,
-    },
-    {
-      sessionId: "#06",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      status: "Completed",
-      amount: "$130",
-      cancelReason: null,
-    },
-  ];
+  // 🚀 Fetch sessions from backend
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await axios.get("http://localhost:5070/api/sessions/getallsessions");
+        const formatted = [];
 
-  // Filter sessions based on status and search query
-  const filteredSessions = dummySessions
+        res.data.userToExpertSessions.forEach((session, idx) => {
+          formatted.push({
+            sessionId: `U-${session._id.slice(-4)}`,
+            user: `${session.firstName || 'N/A'}`,
+            expert: session.expertId?.firstName || 'Expert',
+            date: session.sessionDate?.split("T")[0],
+            time: session.sessionTime,
+            status: session.status,
+            amount: "$0", // You can adjust if amount is present
+            cancelReason: session.status === "rejected" ? "Expert" : null,
+          });
+        });
+
+        res.data.expertToExpertSessions.forEach((session, idx) => {
+          formatted.push({
+            sessionId: `E-${session._id.slice(-4)}`,
+            user: `${session.firstName || 'N/A'}`,
+            expert: session.expertId?.firstName || 'Expert',
+            date: session.sessionDate?.split("T")[0],
+            time: session.sessionTime,
+            status: session.status,
+            amount: "$0", // Update if amount exists
+            cancelReason: session.status === "rejected" ? "Expert" : null,
+          });
+        });
+
+        setSessions(formatted);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch sessions:", error);
+      }
+    };
+
+    fetchSessions();
+  }, []);
+
+  // 🔍 Filter logic
+  const filteredSessions = sessions
     .filter((session) => {
-      // Check if any of the fields match the search query
       const searchLower = searchQuery.toLowerCase();
       return (
         session.sessionId.toLowerCase().includes(searchLower) ||
@@ -107,7 +83,6 @@ const SessionManagement = () => {
       return session.status === statusFilter;
     });
 
-  // Pagination logic
   const indexOfLastSession = currentPage * sessionsPerPage;
   const indexOfFirstSession = indexOfLastSession - sessionsPerPage;
   const currentSessions = filteredSessions.slice(
@@ -115,31 +90,25 @@ const SessionManagement = () => {
     indexOfLastSession
   );
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Handle dropdown toggle
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
-  // Handle status selection
   const handleStatusSelect = (status) => {
     setStatusFilter(status);
-    setIsDropdownOpen(false); // Close dropdown after selecting
+    setIsDropdownOpen(false);
   };
 
-  // Open Popup with session details
   const openPopup = (session) => {
     setSelectedSession(session);
     setIsPopupOpen(true);
   };
 
-  // Close the popup
   const closePopup = () => {
     setIsPopupOpen(false);
     setSelectedSession(null);
   };
 
-  // Export sessions to Excel format
   const exportToExcel = () => {
     const ws = utils.json_to_sheet(filteredSessions);
     const wb = utils.book_new();
@@ -148,10 +117,8 @@ const SessionManagement = () => {
   };
 
   const Sessionedirect = () => {
-    // Redirect to another page
-    router.push("/components/SessionManagement/SessionHistory"); // Replace with your desired path
+    router.push("/components/SessionManagement/SessionHistory");
   };
-
   return (
     <div className="flex justify-center w-full min-h-screen p-6 bg-white overflow-x-scroll">
       <div className="w-full max-w-screen-xl px-4">
@@ -210,22 +177,45 @@ const SessionManagement = () => {
                   All Status
                 </button>
                 <button
-                  onClick={() => handleStatusSelect("Ongoing")}
+                  onClick={() => handleStatusSelect("pending")}
                   className="px-4 py-2 text-sm w-full text-left"
                 >
-                  Ongoing
+                  pending
                 </button>
                 <button
-                  onClick={() => handleStatusSelect("Completed")}
+                  onClick={() => handleStatusSelect("unconfirmed")}
                   className="px-4 py-2 text-sm w-full text-left"
                 >
-                  Completed
+                  unconfirmed
                 </button>
+
                 <button
-                  onClick={() => handleStatusSelect("Canceled")}
+                  onClick={() => handleStatusSelect("confirmed")}
                   className="px-4 py-2 text-sm w-full text-left"
                 >
-                  Canceled
+                  confirmed
+                </button>
+
+                <button
+                  onClick={() => handleStatusSelect("completed")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  completed
+                </button>
+
+
+                <button
+                  onClick={() => handleStatusSelect("rejected")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  rejected
+                </button>
+
+                <button
+                  onClick={() => handleStatusSelect("Rating Submitted")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  Rating Submitted
                 </button>
               </div>
             )}
@@ -262,20 +252,28 @@ const SessionManagement = () => {
               <tbody>
                 {currentSessions.map((session, index) => (
                   <tr key={index} className="hover:bg-gray-100">
-                    <td className="p-2">{session.sessionId}</td>
-                    <td className="p-2">{session.user}</td>
-                    <td className="p-2">{session.expert}</td>
-                    <td className="p-2">{session.date}<br />{session.time}</td>
+                    <td className="p-2 text-center">{session.sessionId}</td>
+                    <td className="p-2 text-center">{session.user}</td>
+                    <td className="p-2 text-center">{session.expert}</td>
+                    <td className="p-2 text-center">{session.date}<br />{session.time}</td>
                     <td className="p-2 text-center">
-                      <span
-                        className={`px-2 py-1 rounded-lg ${
-                          session.status === "Ongoing"
-                            ? "bg-yellow-400 text-black"
-                            : session.status === "Completed"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white"
-                        }`}
-                      >
+                    <span
+                    className={`px-2 py-1 rounded-lg ${
+                      session.status.toLowerCase() === "pending"
+                        ? "bg-yellow-400 text-black"
+                        : session.status.toLowerCase() === "unconfirmed"
+                        ? "bg-red-500 text-white"
+                        : session.status.toLowerCase() === "confirmed"
+                        ? "bg-blue-500 text-white"
+                        : session.status.toLowerCase() === "completed"
+                        ? "bg-red-500 text-white"
+                        : session.status.toLowerCase() === "rejected"
+                        ? "bg-red-500 text-white"
+                        : session.status.toLowerCase() === "Rating Submitted"
+                        ? "bg-purple-500 text-white"
+                        : "bg-purple-500 text-white"
+                        
+                    }`}>
                         {session.status}
                       </span>
                     </td>

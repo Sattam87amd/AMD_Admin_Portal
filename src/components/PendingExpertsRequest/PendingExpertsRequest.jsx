@@ -1,33 +1,31 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";  // Import useRouter for routing
+import { useRouter } from "next/navigation";
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { Check, X, User } from "lucide-react";
+import axios from "axios";
 
 const PendingExpertsRequest = () => {
-  const router = useRouter();  // Initialize router for navigation
+  const router = useRouter();
   const [experts, setExperts] = useState([]);
   const [filteredExperts, setFilteredExperts] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUsername, setSelectedUsername] = useState("");  // Declare selectedUsername state
+  const [selectedUsername, setSelectedUsername] = useState("");
+  const[selectedStatus, setSelectedStatus] = useState("")
   const [currentPage, setCurrentPage] = useState(1);
-  const [visiblePages, setVisiblePages] = useState([]);  // Added visiblePages state
   const itemsPerPage = 6;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
 
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch("https://restcountries.com/v3.1/all");
-        const data = await response.json();
-        const countryNames = data.map((country) => country.name.common).sort();
+        const response = await axios.get("http://localhost:5070/api/countries");
+        const countryNames = response.data.map(country => country.name.common).sort();
         setCountries(["All", ...countryNames]);
       } catch (error) {
         console.error("Error fetching countries:", error);
@@ -38,107 +36,54 @@ const PendingExpertsRequest = () => {
   }, []);
 
   useEffect(() => {
-    const dummyExperts = [
-      { id: 1, country: "Belarus", name: "Ivan", username: "raivan", email: "radioxivan@gmail.com", status: null },
-      { id: 2, country: "India", name: "Ram", username: "Ram123", email: "ram123@gmail.com", status: null },
-      { id: 3, country: "India", name: "Lakhan", username: "Lakhan123", email: "lakhan123@gmail.com", status: null },
-      { id: 4, country: "United Kingdom", name: "Aeran", username: "Aeran123", email: "aeran123@gmail.com", status: null },
-      { id: 5, country: "Netherlands", name: "Jiteksi", username: "jiteksi123", email: "jiteksi123@gmail.com", status: null },
-      { id: 6, country: "United States", name: "Irnakis", username: "Irnakis123", email: "irnakis123@gmail.com", status: null },
-    ];
+    const fetchExperts = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5070/api/expertauth");
+        const pendingExperts = data.data.filter(expert => expert.status === "Pending");
+        setExperts(pendingExperts);
+        setFilteredExperts(pendingExperts);
+      } catch (error) {
+        console.error("Error fetching experts:", error);
+      }
+    };
 
-    setExperts(dummyExperts);
-    setFilteredExperts(dummyExperts);
+    fetchExperts();
   }, []);
 
   useEffect(() => {
     let tempExperts = [...experts];
 
     if (selectedCountry !== "All") {
-      tempExperts = tempExperts.filter((expert) => expert.country === selectedCountry);
-    }
-
-    if (selectedStatus !== "All") {
-      tempExperts = tempExperts.filter((expert) => expert.status === selectedStatus);
+      tempExperts = tempExperts.filter(expert => expert.country === selectedCountry);
     }
 
     if (selectedUsername) {
-      tempExperts = tempExperts.filter((expert) =>
-        expert.username.toLowerCase().includes(selectedUsername.toLowerCase())  // Filter by username
+      tempExperts = tempExperts.filter(expert =>
+        expert.username.toLowerCase().includes(selectedUsername.toLowerCase())
       );
     }
 
     setFilteredExperts(tempExperts);
     setCurrentPage(1);
-  }, [selectedCountry, selectedStatus, searchQuery, selectedUsername, experts]);
-
-  const generatePagination = () => {
-    const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
-    let pages = [];
-
-    pages.push(1);
-    if (currentPage > 3) pages.push("...");
-
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-
-    for (let i = start; i <= end; i++) pages.push(i);
-
-    if (currentPage < totalPages - 2) pages.push("...");
-    if (totalPages > 1) pages.push(totalPages);
-
-    return pages.filter((page, index, array) =>
-      array.indexOf(page) === index
-    );
-  };
-
-  useEffect(() => {
-    setVisiblePages(generatePagination());
-  }, [filteredExperts, currentPage]);
+  }, [selectedCountry, selectedUsername, experts]);
 
   const sortTable = (key) => {
-    let direction = "asc"; // Default sort direction is ascending
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc"; // If the same column is clicked again, toggle the direction
-    }
+    let direction = sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
 
-    let newExperts = [...filteredExperts];
-    newExperts.sort((a, b) => {
+    const sortedExperts = [...filteredExperts].sort((a, b) => {
       if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
       if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
       return 0;
     });
 
-    setFilteredExperts(newExperts);
+    setFilteredExperts(sortedExperts);
     setSortConfig({ key, direction });
   };
 
-  const acceptRequest = (id) => {
-    setExperts((prevExperts) =>
-      prevExperts.map((expert) =>
-        expert.id === id ? { ...expert, status: "Accepted" } : expert
-      )
-    );
-  };
-
-  const rejectRequest = (id) => {
-    setExperts((prevExperts) =>
-      prevExperts.map((expert) =>
-        expert.id === id ? { ...expert, status: "Rejected" } : expert
-      )
-    );
-  };
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredExperts.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredExperts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(filteredExperts.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const nextPage = () =>
-    setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev));
-  const prevPage = () =>
-    setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
 
   const downloadExcel = () => {
     const ws = utils.json_to_sheet(filteredExperts);
@@ -148,8 +93,41 @@ const PendingExpertsRequest = () => {
   };
 
   const handleProfileClick = (username) => {
-    // Navigate to the profile page (for now it's a placeholder)
     router.push("/pendingexpertsrequestprofile");
+  };
+
+  const acceptRequest = async (expertId) => {
+    try {
+      await axios.put(`http://localhost:5070/api/adminauth/experts/${expertId}/status`, {
+        status: "Approved",
+      });
+  
+      // Update local state
+      setExperts((prev) =>
+        prev.map((expert) =>
+          expert._id === expertId ? { ...expert, status: "Approved" } : expert
+        )
+      );
+    } catch (error) {
+      console.error("Error approving expert:", error);
+    }
+  };
+  
+  const rejectRequest = async (expertId) => {
+    try {
+      await axios.put(`http://localhost:5070/api/adminauth/experts/${expertId}/status`, {
+        status: "Rejected",
+      });
+  
+      // Update local state
+      setExperts((prev) =>
+        prev.map((expert) =>
+          expert._id === expertId ? { ...expert, status: "Rejected" } : expert
+        )
+      );
+    } catch (error) {
+      console.error("Error rejecting expert:", error);
+    }
   };
 
   return (
@@ -234,43 +212,34 @@ const PendingExpertsRequest = () => {
           <tbody>
             {currentItems.map((expert) => (
               <tr key={expert.id} className="hover:bg-gray-50 border-b border-gray-200">
-                <td className="p-5 text-left">{expert.country}</td>
-                <td className="text-left">{expert.name}</td>
-                <td className="text-left">{expert.username}</td>
+                <td className="p-5 text-left">India</td>
+                <td className="text-left">{expert.firstName}</td>
+                <td className="text-left">{expert.lastName}</td>
                 <td className="text-left">{expert.email}</td>
                 <td className="text-left">
                   <div className="flex gap-2">
-                    {!expert.status ? (
-                      <>
-                        <button
-                          className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-[#60DF7C] text-white rounded-md"
-                          onClick={() => acceptRequest(expert.id)}
-                        >
-                          <Check size={28} strokeWidth={2} className="text-white" />
-                        </button>
-                        <button
-                          className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-[#FF2A2A] text-white rounded-md"
-                          onClick={() => rejectRequest(expert.id)}
-                        >
-                          <X size={28} strokeWidth={2} className="text-white" />
-                        </button>
-                      </>
-                    ) : (
-                      <div className={`flex items-center justify-center w-[80px] h-[40px] mt-[3px] rounded-md ${expert.status === "Accepted" ? "bg-green-500" : "bg-red-500"}`}>
-                        <span className="text-white">{expert.status}</span>
-                      </div>
-                    )}
-                    <button
-                      className="flex items-center justify-center w-[50px] h-[40px] mt-[3px] bg-black text-white rounded-md"
-                      onClick={() => handleProfileClick(expert.username)}  // Add onClick handler for profile icon
-                    >
-                      <User size={28} strokeWidth={2} className="text-white" />
+                  {expert.status === "Pending" ? (
+                  <>
+                    <button className="w-[50px] h-[40px] bg-[#60DF7C] text-white rounded-md " onClick={() => acceptRequest(expert._id)}>
+                      <Check size={28} strokeWidth={2} />
                     </button>
+                    <button className="w-[50px] h-[40px] bg-[#FF2A2A] text-white rounded-md" onClick={() => rejectRequest(expert._id)}>
+                      <X size={28} strokeWidth={2} />
+                    </button>
+                  </>
+                ) : (
+                  <div className={`w-[80px] h-[40px] rounded-md flex items-center justify-center ${expert.status === "Approved" ? "bg-green-500" : "bg-red-500"}`}>
+                    <span className="text-white">{expert.status}</span>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                )}
+                <button className="w-[50px] h-[40px] bg-black text-white rounded-md" onClick={() => handleProfileClick(expert.username)}>
+                  <User size={28} strokeWidth={2} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
         </table>
 
         {/* Pagination Controls */}
