@@ -106,20 +106,26 @@ const Experts = () => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-4">
             {/* Select by Country */}
-            <div>
-              <h3 className="mb-2">Select by Country</h3>
-              <select
-                className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
-                value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)}
-              >
-                {countries.map((country, index) => (
-                  <option key={index} value={country}>
-                    {country}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Select by Country */}
+<div>
+  <h3 className="mb-2">Select by Country</h3>
+  <select
+    className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
+    value={selectedCountry}
+    onChange={(e) => setSelectedCountry(e.target.value)} // Handling the country selection
+  >
+    {/* All Option */}
+    <option value="All">All</option>
+
+    {/* Map through the countries to display them */}
+    {countries.map((country, index) => (
+      <option key={index} value={country}>
+        {country}
+      </option>
+    ))}
+  </select>
+</div>
+
 
             {/* Select by No. of Live Sessions */}
             <div>
