@@ -29,12 +29,12 @@ const Experts = () => {
         console.error("Error fetching countries:", error);
       }
     };
-  
+
     fetchCountries();
   }, []);
 
- 
-  
+
+
   useEffect(() => {
     const fetchExperts = async () => {
       try {
@@ -51,24 +51,30 @@ const Experts = () => {
 
   useEffect(() => {
     let tempExperts = [...experts];
-
+  
+    
+  
     if (selectedCountry !== "All") {
       tempExperts = tempExperts.filter((expert) => expert.country === selectedCountry);
     }
-
+  
     if (selectedSessions !== "All") {
       tempExperts = tempExperts.filter((expert) => expert.liveSessions === parseInt(selectedSessions));
     }
-
+  
+    
     if (selectedUsername) {
-      tempExperts = tempExperts.filter((expert) =>
-        expert.username.toLowerCase().includes(selectedUsername.toLowerCase())
-      );
+      tempExperts = tempExperts.filter((expert) => {
+        const fullName = (expert.firstName + ' ' + expert.lastName).toLowerCase();
+        return fullName.includes(selectedUsername.toLowerCase());
+      });
     }
-
+  
     setFilteredExperts(tempExperts);
     setCurrentPage(1);
   }, [selectedCountry, selectedSessions, selectedUsername, experts]);
+  
+
 
 
   const sortTable = (key) => {
@@ -107,24 +113,24 @@ const Experts = () => {
           <div className="flex gap-4">
             {/* Select by Country */}
             {/* Select by Country */}
-<div>
-  <h3 className="mb-2">Select by Country</h3>
-  <select
-    className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
-    value={selectedCountry}
-    onChange={(e) => setSelectedCountry(e.target.value)} // Handling the country selection
-  >
-    {/* All Option */}
-    <option value="All">All</option>
+            <div>
+              <h3 className="mb-2">Select by Country</h3>
+              <select
+                className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
+                value={selectedCountry}
+                onChange={(e) => setSelectedCountry(e.target.value)} // Handling the country selection
+              >
+                {/* All Option */}
+                <option value="All">All</option>
 
-    {/* Map through the countries to display them */}
-    {countries.map((country, index) => (
-      <option key={index} value={country}>
-        {country}
-      </option>
-    ))}
-  </select>
-</div>
+                {/* Map through the countries to display them */}
+                {countries.map((country, index) => (
+                  <option key={index} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+            </div>
 
 
             {/* Select by No. of Live Sessions */}
@@ -160,8 +166,8 @@ const Experts = () => {
             </div>
           </div>
 
-          <button 
-            onClick={downloadExcel} 
+          <button
+            onClick={downloadExcel}
             className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg"
           >
             <Download size={24} className="text-white" />

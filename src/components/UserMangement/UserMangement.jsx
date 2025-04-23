@@ -7,6 +7,8 @@ import { MdEdit } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { RiHistoryLine } from "react-icons/ri";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import axios from "axios";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -15,6 +17,7 @@ const UserManagement = () => {
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [lastActive, setLastActive] = useState("All Time");
   const [searchName, setSearchName] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,93 +31,44 @@ const UserManagement = () => {
   const [isHistoryPopupOpen, setIsHistoryPopupOpen] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
 
-  const dummyUsers = [
-    {
-      country: "Belarus",
-      name: "Ivan",
-      username: "Ravian",
-      email: "radioivan@gmail.com",
-      status: "Active",
-      phone: "+9876543210",
-      lastActive: "2024-03-15",
-    },
-    {
-      country: "India",
-      name: "Ram",
-      username: "Ram123",
-      email: "ram123@gmail.com",
-      status: "Deactivate",
-      phone: "+9876543210",
-      lastActive: "2024-02-01",
-    },
-    {
-      country: "United States",
-      name: "John",
-      username: "JohnDoe",
-      email: "john.doe@example.com",
-      status: "Active",
-      phone: "+1234567890",
-      lastActive: "2024-03-10",
-    },
-    {
-      country: "Canada",
-      name: "Alice",
-      username: "Alice2023",
-      email: "alice@example.com",
-      status: "Deactivate",
-      phone: "+1122334455",
-      lastActive: "2024-01-15",
-    },
-    {
-      country: "Germany",
-      name: "Hans",
-      username: "HansG",
-      email: "hans.g@example.com",
-      status: "Active",
-      phone: "+49876543210",
-      lastActive: "2024-03-14",
-    },
-    {
-      country: "France",
-      name: "Marie",
-      username: "MarieF",
-      email: "marie.f@example.com",
-      status: "Active",
-      phone: "+33123456789",
-      lastActive: "2024-03-12",
-    },
-  ];
 
-  // Dummy booking history data
-  const dummyHistory = [
-    { bookingId: "Bk-001", date: "2025-02-10", service: "Consultation", status: "Completed", amount: "$150" },
-    { bookingId: "Bk-002", date: "2025-02-10", service: "Consultation", status: "Pending", amount: "$75" },
-  ];
 
   // Fetch country data from API
+
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await fetch("https://restcountries.com/v3.1/all");
-        const data = await res.json();
-        const countryList = data.map((country) => ({
-          name: country.name.common,
-          flag: country.flags.png,
-        }));
-        countryList.sort((a, b) => a.name.localeCompare(b.name));
-        setCountries(countryList);
+        const response = await fetch("http://localhost:5070/api/countries"); // Match your backend port
+        const countryNames = await response.json();
+        setCountries(countryNames);
       } catch (error) {
         console.error("Error fetching countries:", error);
       }
     };
 
     fetchCountries();
-
-    const storedUsers = JSON.parse(localStorage.getItem("users")) || dummyUsers;
-    setUsers(storedUsers);
-    setFilteredUsers(storedUsers);
-    localStorage.setItem("users", JSON.stringify(storedUsers));
   }, []);
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5070/api/userauth/users");
+        // Add static "status" field to each user
+        const updatedData = data.data.map((user) => ({
+          ...user,
+          status: "Active", // Static status for all users
+        }));
+        setUsers(updatedData);
+        setFilteredUsers(updatedData);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
 
   useEffect(() => {
     let tempUsers = [...users];
@@ -137,7 +91,7 @@ const UserManagement = () => {
       const days = parseInt(lastActive);
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      
+
       tempUsers = tempUsers.filter((user) => {
         const userDate = new Date(user.lastActive);
         return userDate >= cutoffDate;
@@ -181,7 +135,6 @@ const UserManagement = () => {
         ? { ...user, status: user.status === "Active" ? "Deactivated" : "Active" }
         : user
     );
-  
     setUsers(updatedUsers);
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsPopupOpen(false);
@@ -221,10 +174,12 @@ const UserManagement = () => {
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
             >
-              <option value="All">ALL</option>
-              {countries.map((country) => (
-                <option key={country.name} value={country.name}>
-                  {country.name}
+              <option value="All">All</option>
+
+              {/* Map through the countries to display them */}
+              {countries.map((country, index) => (
+                <option key={index} value={country}>
+                  {country}
                 </option>
               ))}
             </select>
@@ -270,107 +225,115 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Data Table */}
-        <table className="w-full">
-          <thead className="border-y-2 border-[#FA9E93]">
-            <tr>
-              <th className="p-2 text-center">COUNTRY</th>
-              <th className="p-2 text-center">NAME</th>
-              <th className="p-2 text-center">USERNAME</th>
-              <th className="p-2 text-center">EMAIL</th>
-              <th className="p-2 text-center">STATUS</th>
-              <th className="p-2 text-center">PHONE</th>
-              <th className="p-2 text-center">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((user) => (
-              <tr key={user.username} className="hover:bg-gray-100">
-                <td className="p-2 text-center">{user.country}</td>
-                <td className="p-2 text-center">{user.name}</td>
-                <td className="p-2 text-center">{user.username}</td>
-                <td className="p-2 text-center">{user.email}</td>
-                <td className="p-2 text-center">
-                  <div
-                    className={`inline-block w-40 px-3 py-1 rounded-xl border ${
-                      user.status === "Active"
-                        ? "bg-green-100 border-green-300"
-                        : "bg-red-100 border-red-300"
-                    }`}
-                  >
-                    {user.status}
-                  </div>
-                </td>
-                <td className="p-2 text-center">{user.phone}</td>
-                <td className="p-2 flex gap-4 justify-center">
-                  <button
-                    className="text-black border border-black w-6 h-6 rounded-md"
-                    onClick={() => handleEdit(user)}
-                  >
-                    <MdEdit size={20} />
-                  </button>
-                  <button
-                    className="text-[#EC6453] border border-black w-[1.6rem] h-[1.5rem] px-[0.16rem] rounded-md"
-                    onClick={() => handleDelete(user)}
-                  >
-                    <MdDelete size={20} />
-                  </button>
-                  <button
-                    className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
-                    onClick={() => handleHistory(user)}  // Trigger booking history popup
-                  >
-                    <RiHistoryLine size={20} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+{/* Data Table */}
+<table className="w-full">
+  {/* Table Header */}
+  <thead className="border-y-2 border-red-400 bg-white">
+    <tr>
+      {["COUNTRY", "NAME", "LASTNAME", "EMAIL", "STATUS", "PHONE", "ACTIONS"].map((label, index) => (
+        <th key={index} className="p-4 text-center font-semibold cursor-pointer">
+          <div className="flex items-center gap-1">
+            <span>{label}</span>
+            <div className="flex flex-col items-center">
+              <FaSortUp className={sortConfig.key === label && sortConfig.direction === "asc" ? "text-black" : "text-gray-300"} />
+              <FaSortDown className={sortConfig.key === label && sortConfig.direction === "desc" ? "text-black" : "text-gray-300"} />
+            </div>
+          </div>
+        </th>
+      ))}
+    </tr>
+  </thead>
+
+  {/* Table Body */}
+  <tbody>
+    {currentItems.map((user, index) => (
+      <tr key={index} className="hover:bg-gray-50 border-b border-gray-200">
+        <td className="p-3 text-center">{user.country}</td>
+        <td className="text-center">{user.firstName}</td>
+        <td className="text-center">{user.lastName}</td>
+        
+        {/* EMAIL Column with Word Wrapping */}
+        <td className="text-center break-words p-3">
+          {user.email}
+        </td>
+
+        {/* STATUS Column with Proper Alignment */}
+        <td className="p-2 text-center">
+          <div
+            className={`inline-block w-40 px-3 py-1 rounded-xl border ${user.status === "Active"
+              ? "bg-green-100 border-green-300"
+              : "bg-red-100 border-red-300"
+            }`}
+          >
+            {user.status}
+          </div>
+        </td>
+
+        <td className="p-2 text-center">{user.phone}</td>
+
+        {/* ACTIONS Column */}
+        <td className="p-2 flex gap-4 justify-center">
+          <button
+            className="text-black border border-black w-6 h-6 rounded-md"
+            onClick={() => handleEdit(user)}
+          >
+            <MdEdit size={20} />
+          </button>
+          <button
+            className="text-[#EC6453] border border-black w-[1.6rem] h-[1.5rem] px-[0.16rem] rounded-md"
+            onClick={() => handleDelete(user)}
+          >
+            <MdDelete size={20} />
+          </button>
+          <button
+            className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
+            onClick={() => handleHistory(user)}  // Trigger booking history popup
+          >
+            <RiHistoryLine size={20} />
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
 
         <div className="flex justify-center items-center mt-4">
-  {/* Display Total Sessions */}
-  <div className="text-md text-[red] mb-2">
-    Total: {filteredUsers.length}
-  </div>
-</div>
+          {/* Display Total Sessions */}
+          <div className="text-md text-[red] mb-2">
+            Total: {filteredUsers.length}
+          </div>
+        </div>
+
 
         {/* Pagination */}
-        <div className="flex justify-center items-center mt-4">
-          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
+
+
+        <div className="flex justify-center items-center mb-[7rem]">
+          <div className="flex gap-6 p-2 border rounded-lg bg-white shadow-md shadow-gray-400">
             <button
-              onClick={() => setCurrentPage(currentPage - 1)}
+              onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg ${
-                currentPage === 1
-                  ? "text-gray-500 cursor-not-allowed"
-                  : "text-red-500"
-              }`}
+              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-500 cursor-not-allowed" : "text-red-500"}`}
             >
               <IoIosArrowBack size={20} />
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => (
+            {/* Pagination Numbers */}
+            {[...Array(totalPages)].map((_, number) => (
               <button
-                key={i + 1}
-                onClick={() => paginate(i + 1)}
-                className={`mx-1 px-3 py-1 rounded ${
-                  currentPage === i + 1
-                    ? "bg-[#C91416] text-white"
-                    : "bg-gray-200"
-                }`}
+                key={number + 1}
+                onClick={() => paginate(number + 1)}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-base ${currentPage === number + 1 ? "bg-red-500 text-white" : "text-[#FA9E93] bg-white"}`}
               >
-                {i + 1}
+                {number + 1}
               </button>
             ))}
 
             <button
-              onClick={() => setCurrentPage(currentPage + 1)}
+              onClick={() => paginate(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg ${
-                currentPage === totalPages
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-red-500"
-              }`}
+              className={`p-2 rounded-lg ${currentPage === totalPages ? "text-gray-500 cursor-not-allowed" : "text-red-500"}`}
             >
               <IoIosArrowForward size={20} />
             </button>
@@ -405,7 +368,7 @@ const UserManagement = () => {
                 }
               />
             </div>
-           
+
             <div className="flex justify-center w-full gap-[5rem]">
               <div className="flex w-full justify-evenly">
                 <button
@@ -423,43 +386,43 @@ const UserManagement = () => {
               </div>
             </div>
             <div className="flex justify-center">
-                <button
-                  onClick={() => setIsPopupOpen(false)}
-                  className=" w-52 px-6 py-4 bg-gray-300 text-white rounded-lg"
-                >
-                  Cancel
-                </button>
-              </div>
+              <button
+                onClick={() => setIsPopupOpen(false)}
+                className=" w-52 px-6 py-4 bg-gray-300 text-white rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Delete Popup */}
-{isDeletePopupOpen && (
-  <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
-    <div className="bg-white p-6 rounded-2xl w-[40vw] shadow-lg border border-gray-300">
-      <h2 className="text-xl text-left font-semibold mb-4">Confirm Delete</h2><hr className="border-red-600"/>
-      <p className="mb-6 mt-4 text-left text-gray-600">
-        Are you sure you want to delete this user permanently?
-        <br /> You can’t undo this action.
-      </p><hr className="border-red-600 mb-5"/>
-      <div className="flex justify-between">
-        <button
-          onClick={handleConfirmDelete}
-          className="px-14 py-2 bg-red-500 text-white rounded-lg text-md font-semibold"
-        >
-          DELETE
-        </button>
-        <button
-          onClick={() => setIsDeletePopupOpen(false)}
-          className="px-14 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-lg font-semibold"
-        >
-          CANCEL
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {isDeletePopupOpen && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-6 rounded-2xl w-[40vw] shadow-lg border border-gray-300">
+            <h2 className="text-xl text-left font-semibold mb-4">Confirm Delete</h2><hr className="border-red-600" />
+            <p className="mb-6 mt-4 text-left text-gray-600">
+              Are you sure you want to delete this user permanently?
+              <br /> You can’t undo this action.
+            </p><hr className="border-red-600 mb-5" />
+            <div className="flex justify-between">
+              <button
+                onClick={handleConfirmDelete}
+                className="px-14 py-2 bg-red-500 text-white rounded-lg text-md font-semibold"
+              >
+                DELETE
+              </button>
+              <button
+                onClick={() => setIsDeletePopupOpen(false)}
+                className="px-14 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-lg font-semibold"
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* History Popup */}
@@ -484,11 +447,10 @@ const UserManagement = () => {
                     <td className="p-2">{booking.date}</td>
                     <td className="p-2">{booking.service}</td>
                     <td
-                      className={`p-2 border text-center ${
-                        booking.status === "Completed"
-                          ? "bg-[#4CB269] text-white"
-                          : "bg-[#FFA629] text-white"
-                      }`}
+                      className={`p-2 border text-center ${booking.status === "Completed"
+                        ? "bg-[#4CB269] text-white"
+                        : "bg-[#FFA629] text-white"
+                        }`}
                     >
                       {booking.status}
                     </td>
