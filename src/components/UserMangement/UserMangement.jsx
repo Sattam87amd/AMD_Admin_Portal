@@ -10,14 +10,23 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import axios from "axios";
 
+// Import the necessary libraries for phone number parsing
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
+
+// Initialize the country data
+countries.registerLocale(enLocale);
+
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [lastActive, setLastActive] = useState("All Time");
   const [searchName, setSearchName] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
+  const [uniqueCountries, setUniqueCountries] = useState([]);
+  const [error, setError] = useState(null); // Add error state
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,44 +40,95 @@ const UserManagement = () => {
   const [isHistoryPopupOpen, setIsHistoryPopupOpen] = useState(false);
   const [userHistory, setUserHistory] = useState([]);
 
+  // Dummy history data
+  const dummyHistory = [
+    { bookingId: "B001", date: "2025-04-01", service: "Hotel Booking", status: "Completed", amount: "$250" },
+    { bookingId: "B002", date: "2025-04-10", service: "Car Rental", status: "Active", amount: "$120" },
+    { bookingId: "B003", date: "2025-04-15", service: "Tour Package", status: "Completed", amount: "$350" },
+    { bookingId: "B004", date: "2025-04-20", service: "Flight Booking", status: "Active", amount: "$580" },
+  ];
 
-
-  // Fetch country data from API
-
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await fetch("http://localhost:5070/api/countries"); // Match your backend port
-        const countryNames = await response.json();
-        setCountries(countryNames);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
+  // Function to extract country from phone number - FIXED VERSION
+  const getCountryFromPhone = (phoneNumber) => {
+    try {
+      // Check if phoneNumber is a string
+      if (!phoneNumber || typeof phoneNumber !== 'string') {
+        return "Unknown";
       }
-    };
 
-    fetchCountries();
-  }, []);
+      // Make sure the phone number is in international format (with +)
+      let formattedNumber = phoneNumber;
+      if (!phoneNumber.startsWith('+')) {
+        formattedNumber = '+' + phoneNumber;
+      }
 
+      const parsedNumber = parsePhoneNumberFromString(formattedNumber);
+
+      if (parsedNumber && parsedNumber.country) {
+        return countries.getName(parsedNumber.country, 'en');
+      }
+
+      // If parsing fails, try to match country code manually
+      const countryCodeMap = {
+        '1': 'United States',
+        '44': 'United Kingdom',
+        '91': 'India',
+        '86': 'China',
+        '49': 'Germany',
+        '33': 'France',
+        '81': 'Japan',
+        '39': 'Italy',
+        '7': 'Russia',
+        '55': 'Brazil',
+        // Add more common country codes as needed
+      };
+
+      // Extract the potential country code (first 1-3 digits after removing +)
+      const strippedNumber = phoneNumber.replace(/^\+/, '');
+
+      for (let i = 1; i <= 3; i++) {
+        const potentialCode = strippedNumber.substring(0, i);
+        if (countryCodeMap[potentialCode]) {
+          return countryCodeMap[potentialCode];
+        }
+      }
+
+      return "Unknown";
+    } catch (error) {
+      console.error("Error parsing phone number:", error);
+      return "Unknown";
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const { data } = await axios.get("http://localhost:5070/api/userauth/users");
-        // Add static "status" field to each user
-        const updatedData = data.data.map((user) => ({
-          ...user,
-          status: "Active", // Static status for all users
-        }));
-        setUsers(updatedData);
-        setFilteredUsers(updatedData);
+
+        // Process each user to add country based on phone number
+        const processedUsers = data.data.map((user) => {
+          const countryName = getCountryFromPhone(user.phone);
+          return {
+            ...user,
+            status: "Active", // Static status for all users
+            country: countryName,
+          };
+        });
+
+        // Extract unique countries for the dropdown
+        const countries = [...new Set(processedUsers.map(user => user.country))].filter(country => country !== "Unknown");
+        setUniqueCountries(countries);
+
+        setUsers(processedUsers);
+        setFilteredUsers(processedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
+        setError("Failed to fetch users. Please try again later.");
       }
     };
 
     fetchUsers();
   }, []);
-
 
   useEffect(() => {
     let tempUsers = [...users];
@@ -82,7 +142,8 @@ const UserManagement = () => {
     // Name search filter
     if (searchName) {
       tempUsers = tempUsers.filter((user) =>
-        user.name.toLowerCase().includes(searchName.toLowerCase())
+        (user.firstName && user.firstName.toLowerCase().includes(searchName.toLowerCase())) ||
+        (user.lastName && user.lastName.toLowerCase().includes(searchName.toLowerCase()))
       );
     }
 
@@ -93,6 +154,7 @@ const UserManagement = () => {
       cutoffDate.setDate(cutoffDate.getDate() - days);
 
       tempUsers = tempUsers.filter((user) => {
+        if (!user.lastActive) return true;
         const userDate = new Date(user.lastActive);
         return userDate >= cutoffDate;
       });
@@ -101,6 +163,27 @@ const UserManagement = () => {
     setFilteredUsers(tempUsers);
     setCurrentPage(1);
   }, [selectedCountry, searchName, lastActive, users]);
+
+  // Handle sorting
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+
+    const sortedData = [...filteredUsers].sort((a, b) => {
+      if (a[key] < b[key]) {
+        return direction === 'asc' ? -1 : 1;
+      }
+      if (a[key] > b[key]) {
+        return direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    setFilteredUsers(sortedData);
+  };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -122,13 +205,20 @@ const UserManagement = () => {
   };
 
   const handleUpdate = () => {
+    // Update the country when phone number changes
+    let updatedUser = { ...currentUser };
+    if (currentUser.phone) {
+      updatedUser.country = getCountryFromPhone(currentUser.phone);
+    }
+
     const updatedUsers = users.map((user) =>
-      user.username === currentUser.username ? { ...user, ...currentUser } : user
+      user.id === currentUser.id ? updatedUser : user
     );
     setUsers(updatedUsers);
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsPopupOpen(false);
   };
+
   const handleDeactivate = () => {
     const updatedUsers = users.map((user) =>
       user.id === currentUser.id
@@ -139,20 +229,58 @@ const UserManagement = () => {
     localStorage.setItem("users", JSON.stringify(updatedUsers));
     setIsPopupOpen(false);
   };
-  
 
-  const handleDelete = (user) => {
-    setUserToDelete(user);
-    setIsDeletePopupOpen(true);
+  const handleDelete = async (user) => {
+    try {
+      setUserToDelete(user); // Set the user to delete
+      setIsDeletePopupOpen(true); // Show confirmation popup
+      
+      // This used to be the direct deletion, but now we've moved it to handleConfirmDelete
+      // after the user confirms in the popup
+    } catch (error) {
+      console.error('Delete error:', error);
+      setError(error.message || "Failed to delete user");
+    }
   };
 
-  const handleConfirmDelete = () => {
-    const updatedUsers = users.filter(
-      (user) => user.username !== userToDelete.username
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setIsDeletePopupOpen(false);
+  const handleConfirmDelete = async () => {
+    try {
+      // Corrected URL and better error handling
+      const response = await fetch(
+        `http://localhost:5070/api/userauth/deleteuser/${userToDelete._id}`, 
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+  
+      // Handle non-successful responses
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to delete user');
+      }
+  
+      // Safe JSON parsing
+      let data;
+      try {
+        data = await response.json();
+      } catch (error) {
+        data = { message: 'User deleted successfully' };
+      }
+  
+      // Update UI
+      setIsDeletePopupOpen(false);
+      setUsers(prevUsers => prevUsers.filter(u => u._id !== userToDelete._id));
+  
+      console.log(data.message);
+  
+    } catch (error) {
+      console.error('Delete error:', error);
+      setError(error.message || "Failed to delete user");
+    }
   };
 
   const handleHistory = (user) => {
@@ -165,6 +293,19 @@ const UserManagement = () => {
       <div className="w-11/12">
         <h1 className="text-2xl font-bold mb-4 text-[#191919]">USER MANAGEMENT</h1>
 
+        {/* Display Error Message if present */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>{error}</p>
+            <button 
+              className="float-right font-bold" 
+              onClick={() => setError(null)}
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
         {/* Filter Section */}
         <div className="flex gap-4 items-center mb-6">
           <div>
@@ -176,8 +317,8 @@ const UserManagement = () => {
             >
               <option value="All">All</option>
 
-              {/* Map through the countries to display them */}
-              {countries.map((country, index) => (
+              {/* Map through the unique countries detected from phone numbers */}
+              {uniqueCountries.map((country, index) => (
                 <option key={index} value={country}>
                   {country}
                 </option>
@@ -225,78 +366,91 @@ const UserManagement = () => {
           </div>
         </div>
 
-{/* Data Table */}
-<table className="w-full">
-  {/* Table Header */}
-  <thead className="border-y-2 border-red-400 bg-white">
-    <tr>
-      {["COUNTRY", "NAME", "LASTNAME", "EMAIL", "STATUS", "PHONE", "ACTIONS"].map((label, index) => (
-        <th key={index} className="p-4 text-center font-semibold cursor-pointer">
-          <div className="flex items-center gap-1">
-            <span>{label}</span>
-            <div className="flex flex-col items-center">
-              <FaSortUp className={sortConfig.key === label && sortConfig.direction === "asc" ? "text-black" : "text-gray-300"} />
-              <FaSortDown className={sortConfig.key === label && sortConfig.direction === "desc" ? "text-black" : "text-gray-300"} />
-            </div>
-          </div>
-        </th>
-      ))}
-    </tr>
-  </thead>
+        {/* Data Table */}
+        <table className="w-full">
+          {/* Table Header */}
+          <thead className="border-y-2 border-red-400 bg-white">
+            <tr>
+              {["COUNTRY", "NAME", "LASTNAME", "EMAIL", "STATUS", "PHONE", "ACTIONS"].map((label, index) => (
+                <th
+                  key={index}
+                  className="p-4 text-center font-semibold cursor-pointer"
+                  onClick={() => requestSort(label.toLowerCase())}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <span>{label}</span>
+                    <div className="flex flex-col items-center">
+                      <FaSortUp className={sortConfig.key === label.toLowerCase() && sortConfig.direction === "asc" ? "text-black" : "text-gray-300"} />
+                      <FaSortDown className={sortConfig.key === label.toLowerCase() && sortConfig.direction === "desc" ? "text-black" : "text-gray-300"} />
+                    </div>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-  {/* Table Body */}
-  <tbody>
-    {currentItems.map((user, index) => (
-      <tr key={index} className="hover:bg-gray-50 border-b border-gray-200">
-        <td className="p-3 text-center">{user.country}</td>
-        <td className="text-center">{user.firstName}</td>
-        <td className="text-center">{user.lastName}</td>
-        
-        {/* EMAIL Column with Word Wrapping */}
-        <td className="text-center break-words p-3">
-          {user.email}
-        </td>
+          {/* Table Body */}
+          <tbody>
+            {currentItems.map((user, index) => (
+              <tr key={index} className="hover:bg-gray-50 border-b border-gray-200">
+                <td className="p-3 text-center">{user.country}</td>
+                <td className="text-center">{user.firstName}</td>
+                <td className="text-center">{user.lastName}</td>
 
-        {/* STATUS Column with Proper Alignment */}
-        <td className="p-2 text-center">
-          <div
-            className={`inline-block w-40 px-3 py-1 rounded-xl border ${user.status === "Active"
-              ? "bg-green-100 border-green-300"
-              : "bg-red-100 border-red-300"
-            }`}
-          >
-            {user.status}
-          </div>
-        </td>
+                {/* EMAIL Column with Word Wrapping */}
+                <td className="text-center break-words p-3">
+                  {user.email}
+                </td>
 
-        <td className="p-2 text-center">{user.phone}</td>
+                {/* STATUS Column with Proper Alignment */}
+                <td className="p-2 text-center">
+                  <div
+                    className={`inline-block w-40 px-3 py-1 rounded-xl border ${user.status === "Active"
+                      ? "bg-green-100 border-green-300"
+                      : "bg-red-100 border-red-300"
+                      }`}
+                  >
+                    {user.status}
+                  </div>
+                </td>
 
-        {/* ACTIONS Column */}
-        <td className="p-2 flex gap-4 justify-center">
-          <button
-            className="text-black border border-black w-6 h-6 rounded-md"
-            onClick={() => handleEdit(user)}
-          >
-            <MdEdit size={20} />
-          </button>
-          <button
-            className="text-[#EC6453] border border-black w-[1.6rem] h-[1.5rem] px-[0.16rem] rounded-md"
-            onClick={() => handleDelete(user)}
-          >
-            <MdDelete size={20} />
-          </button>
-          <button
-            className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
-            onClick={() => handleHistory(user)}  // Trigger booking history popup
-          >
-            <RiHistoryLine size={20} />
-          </button>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+                <td className="p-2 text-center">{user.phone}</td>
 
+                {/* ACTIONS Column */}
+                <td className="p-2 flex gap-4 justify-center">
+                  {/* 
+                     Edit Button:
+                     This button was originally used in the Admin Panel to trigger the editing of a specific user's information.
+                     When clicked, it would call the handleEdit(user) function, passing the current user object.
+                     The handleEdit function was expected to open a modal or form pre-filled with the user's data for editing.
+                     This code is currently commented out because the admin considered this functionality to be illogical or unnecessary.
+                 */}
+                  {/* 
+                     <button
+                       className="text-black border border-black w-6 h-6 rounded-md"
+                       onClick={() => handleEdit(user)}
+                     >
+                       <MdEdit size={20} />                   
+                     </button> 
+                   */}
+
+                  <button
+                    className="text-[#EC6453] border border-black w-[1.6rem] h-[1.5rem] px-[0.16rem] rounded-md"
+                    onClick={() => handleDelete(user)}
+                  >
+                    <MdDelete size={20} />
+                  </button>
+                  <button
+                    className="text-black border border-black w-7 h-6 rounded-md px-[0.16rem]"
+                    onClick={() => handleHistory(user)}
+                  >
+                    <RiHistoryLine size={20} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         <div className="flex justify-center items-center mt-4">
           {/* Display Total Sessions */}
@@ -305,16 +459,14 @@ const UserManagement = () => {
           </div>
         </div>
 
-
         {/* Pagination */}
-
-
         <div className="flex justify-center items-center mb-[7rem]">
           <div className="flex gap-6 p-2 border rounded-lg bg-white shadow-md shadow-gray-400">
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-500 cursor-not-allowed" : "text-red-500"}`}
+              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-500 cursor-not-allowed" : "text-red-500"
+                }`}
             >
               <IoIosArrowBack size={20} />
             </button>
@@ -324,7 +476,8 @@ const UserManagement = () => {
               <button
                 key={number + 1}
                 onClick={() => paginate(number + 1)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-base ${currentPage === number + 1 ? "bg-red-500 text-white" : "text-[#FA9E93] bg-white"}`}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-base ${currentPage === number + 1 ? "bg-red-500 text-white" : "text-[#FA9E93] bg-white"
+                  }`}
               >
                 {number + 1}
               </button>
@@ -333,7 +486,8 @@ const UserManagement = () => {
             <button
               onClick={() => paginate(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg ${currentPage === totalPages ? "text-gray-500 cursor-not-allowed" : "text-red-500"}`}
+              className={`p-2 rounded-lg ${currentPage === totalPages ? "text-gray-500 cursor-not-allowed" : "text-red-500"
+                }`}
             >
               <IoIosArrowForward size={20} />
             </button>
@@ -364,9 +518,12 @@ const UserManagement = () => {
                 className="p-2 w-full border border-gray-300 rounded-lg"
                 value={currentUser?.phone || ""}
                 onChange={(e) =>
-                  setCurrentUser({ ...currentUser, Phone: e.target.value })
+                  setCurrentUser({ ...currentUser, phone: e.target.value })
                 }
               />
+              <p className="text-sm text-gray-500 mt-1">
+                Country will be automatically updated based on phone number
+              </p>
             </div>
 
             <div className="flex justify-center w-full gap-[5rem]">
@@ -385,10 +542,10 @@ const UserManagement = () => {
                 </button>
               </div>
             </div>
-            <div className="flex justify-center">
+            <div className="flex justify-center ">
               <button
                 onClick={() => setIsPopupOpen(false)}
-                className=" w-52 px-6 py-4 bg-gray-300 text-white rounded-lg"
+                className="w-52 px-6 py-4 bg-gray-300 text-white rounded-lg"
               >
                 Cancel
               </button>
@@ -404,7 +561,7 @@ const UserManagement = () => {
             <h2 className="text-xl text-left font-semibold mb-4">Confirm Delete</h2><hr className="border-red-600" />
             <p className="mb-6 mt-4 text-left text-gray-600">
               Are you sure you want to delete this user permanently?
-              <br /> You can’t undo this action.
+              <br /> You can't undo this action.
             </p><hr className="border-red-600 mb-5" />
             <div className="flex justify-between">
               <button
@@ -423,7 +580,6 @@ const UserManagement = () => {
           </div>
         </div>
       )}
-
 
       {/* History Popup */}
       {isHistoryPopupOpen && (
