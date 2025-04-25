@@ -1,51 +1,70 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Pie, PieChart, Cell, Tooltip } from "recharts";
 
-// Pie Chart Data
-const chartData = [
-  { domain: "Home", value: 25, fill: "#5858FA" },
-  { domain: "Career and Business", value: 50, fill: "#8E00B6" },
-  { domain: "Wellness", value: 20, fill: "#FF4016" },
-  { domain: "Others", value: 5, fill: "#737373" },
-];
-
-// Table data with domain, percentage, new users, and total users
-const domainStats = [
-  {
-    domain: "Career and Business",
-    percent: "50%",
-    newUsers: "778",
-    totalUsers: "3774",
-    color: "#8E00B6",
-  },
-  {
-    domain: "Home",
-    percent: "25%",
-    newUsers: "378",
-    totalUsers: "2774",
-    color: "#5858FA",
-  },
-  {
-    domain: "Wellness",
-    percent: "20%",
-    newUsers: "86",
-    totalUsers: "726",
-    color: "#FF4016",
-  },
-  {
-    domain: "Others",
-    percent: "5%",
-    newUsers: "12",
-    totalUsers: "125",
-    color: "#737373",
-  },
-];
-
 const Domain = () => {
+  const [expertCounts, setExpertCounts] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [totalExperts, setTotalExperts] = useState(0);
+
+  useEffect(() => {
+    const fetchExpertCounts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5070/api/expertauth");
+
+        // Group experts by their areaOfExpertise and count them
+        const areaCounts = response.data.data.reduce((acc, expert) => {
+          const area = expert.areaOfExpertise;
+          if (acc[area]) {
+            acc[area] += 1; // Increment count for the area
+          } else {
+            acc[area] = 1; // Initialize count for new area
+          }
+          return acc;
+        }, {});
+
+        // Calculate total experts
+        const total = Object.values(areaCounts).reduce((sum, count) => sum + count, 0);
+        setTotalExperts(total);
+
+        // Convert the object into an array of objects with areaOfExpertise and count
+        const formattedCounts = Object.keys(areaCounts).map((area) => ({
+          areaOfExpertise: area,
+          count: areaCounts[area],
+        }));
+
+        // Set the chart data with random colors
+        const chartDataFormatted = formattedCounts.map((item) => ({
+          domain: item.areaOfExpertise,
+          value: item.count,
+          fill: getRandomColor(),
+        }));
+
+        setChartData(chartDataFormatted);
+        setExpertCounts(formattedCounts);
+      } catch (error) {
+        console.error("Error fetching expert counts:", error);
+      }
+    };
+
+    fetchExpertCounts();
+  }, []);
+
+  // Helper function to generate random colors for the pie chart
+  const getRandomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
   return (
     <div>
-       <div className="h-0.5 w-[76rem] bg-gray-300 mt-10 ml-5"></div>
+      <div className="h-0.5 w-[76rem] bg-gray-300 mt-10 ml-5"></div>
 
       {/* Main Container */}
       <div className="w-[68.75rem] mx-[3rem] my-10 rounded-lg p-8">
@@ -58,7 +77,7 @@ const Domain = () => {
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* LEFT SIDE: Pie Chart */}
-          <div className="md:w-1/2 w-full flex flex-col items-center ">
+          <div className="md:w-1/2 w-full flex flex-col items-center">
             <PieChart width={650} height={500}>
               <Pie
                 data={chartData}
@@ -94,52 +113,40 @@ const Domain = () => {
 
           {/* RIGHT SIDE: Domain Statistics Panel */}
           <div className="md:w-1/2 w-full space-y-6">
-            {domainStats.map((item) => (
-              <div
-                key={item.domain}
-                className="grid grid-cols-3 gap-6 items-center border-b pb-4"
-              >
-                {/* Left Section: Domain + Percentage */}
-                <div className="flex items-center space-x-3">
-                  <span
-                    className="inline-block h-4 w-4 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <div className="flex flex-col">
-                    <span
-                      className="font-semibold text-[13px]"
-                      style={{ color: item.color }}
-                    >
-                      {item.domain}
+            {expertCounts.map((item) => {
+              const percentage = ((item.count / totalExperts) * 100).toFixed(2);
+              return (
+                <div
+                  key={item.areaOfExpertise}
+                  className="grid grid-cols-2 gap-6 items-center border-b pb-4"
+                >
+                  {/* Left Section: Domain + Percentage */}
+                  <div className="flex  items-center space-x-3">
+                    <div className="flex flex-col justify-between">
+                      <span className="font-semibold text-[13px]">{item.areaOfExpertise}</span>
+                      <span className="text-lg font-semibold">{percentage}%</span>
+                    </div>
+                  </div>
+
+                  {/* Middle Section: New Users
+                  <div className="text-center">
+                    <span className="text-base text-muted-foreground">
+                      <span className="font-semibold text-lg">N/A</span> New users
                     </span>
-                    <span
-                      className="text-lg font-semibold"
-                      style={{ color: item.color }}
-                    >
-                      {item.percent} ↑
+                  </div> */}
+
+                  {/* Right Section: Total Users */}
+                  <div className="text-right">
+                    <span className="text-base text-muted-foreground">
+                      Total <br />
+                      <span className="font-semibold text-lg">{item.count}</span>
+                      <br />
+                      experts
                     </span>
                   </div>
                 </div>
-
-                {/* Middle Section: New Users */}
-                <div className="text-center">
-                  <span className="text-base text-muted-foreground">
-                    <span className="font-semibold text-lg">{item.newUsers}</span>{" "}
-                    New users
-                  </span>
-                </div>
-
-                {/* Right Section: Total Users */}
-                <div className="text-right">
-                  <span className="text-base text-muted-foreground">
-                    Total <br />
-                    <span className="font-semibold text-lg">{item.totalUsers}</span>{" "}
-                    <br />
-                    users
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
