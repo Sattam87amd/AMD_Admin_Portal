@@ -286,7 +286,7 @@ const UserManagement = () => {
   const handleHistory = async (user) => {
     try {
       // Fetch booking history based on the user (you may need to filter by user ID or other criteria)
-      const response = await axios.get(`http://localhost:5070/api/usersession/bookings`);
+      const response = await axios.get(`http://localhost:5070/api/adminauth/bookings`);
   
       if (response.data.success) {
         // Assuming the bookings returned are in the 'bookings' field
