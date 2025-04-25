@@ -283,10 +283,24 @@ const UserManagement = () => {
     }
   };
 
-  const handleHistory = (user) => {
-    setUserHistory(dummyHistory); // Load dummy booking history
-    setIsHistoryPopupOpen(true); // Open the booking history popup
+  const handleHistory = async (user) => {
+    try {
+      // Fetch booking history based on the user (you may need to filter by user ID or other criteria)
+      const response = await axios.get(`http://localhost:5070/api/usersession/bookings`);
+  
+      if (response.data.success) {
+        // Assuming the bookings returned are in the 'bookings' field
+        setUserHistory(response.data.bookings);  // Set booking history for the user
+        setIsHistoryPopupOpen(true);  // Open the booking history popup
+      } else {
+        setError("Failed to fetch booking history.");
+      }
+    } catch (error) {
+      console.error('Error fetching booking history:', error);
+      setError("Failed to fetch booking history. Please try again later.");
+    }
   };
+  
 
   return (
     <div className="flex justify-center w-full p-6 bg-white">
@@ -601,7 +615,7 @@ const UserManagement = () => {
                   <tr key={booking.bookingId}>
                     <td className="p-2">{booking.bookingId}</td>
                     <td className="p-2">{booking.date}</td>
-                    <td className="p-2">{booking.service}</td>
+                    <td className="p-2">{booking.areaOfExpertise}</td>
                     <td
                       className={`p-2 border text-center ${booking.status === "Completed"
                         ? "bg-[#4CB269] text-white"
