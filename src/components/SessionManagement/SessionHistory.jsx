@@ -1,107 +1,103 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, Search } from "lucide-react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoEyeOutline } from "react-icons/io5";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import Link from "next/link";
 import { utils, writeFile } from "xlsx"; // For Excel download
+import axios from "axios";
 
 const SessionHistory = () => {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeSession, setActiveSession] = useState("Session History");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // State for popup visibility and selected session
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const sessionsPerPage = 5;
-  // Dummy session history data
-  const dummySessionsHistory = [
-    {
-      sessionId: "#01",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      duration: "45 mins",
-      feedback: "Very helpful session",
-    },
-    {
-      sessionId: "#02",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      duration: "45 mins",
-      feedback: "Very helpful session",
-    },
-    {
-      sessionId: "#03",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      duration: "45 mins",
-      feedback: "Very helpful session",
-    },
-    {
-      sessionId: "#04",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      duration: "45 mins",
-      feedback: "Very helpful session",
-    },
-    {
-      sessionId: "#05",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      duration: "45 mins",
-      feedback: "Very helpful session",
-    },
-    {
-      sessionId: "#06",
-      user: "Ivan",
-      expert: "Jane Smith",
-      date: "2025-02-26",
-      time: "10:00 AM",
-      duration: "45 mins",
-      feedback: "Very helpful session",
-    },
-  ];
 
-   // Filter sessions based on search query
-  const filteredSessions = dummySessionsHistory.filter((session) => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      session.sessionId.toLowerCase().includes(searchLower) ||
-      session.user.toLowerCase().includes(searchLower) ||
-      session.expert.toLowerCase().includes(searchLower) ||
-      session.date.toLowerCase().includes(searchLower) ||
-      session.time.toLowerCase().includes(searchLower) ||
-      session.duration.toLowerCase().includes(searchLower) ||
-      session.feedback.toLowerCase().includes(searchLower)
-    );
-  });
+  // 🚀 Fetch sessions from backend
+ useEffect(() => {
+  const fetchSessions = async () => {
+    try {
+      const res = await axios.get("http://localhost:5070/api/sessions/getallsessions");
+      const formatted = [];
 
-  // Pagination logic
+      res.data.userToExpertSessions.forEach((session) => {
+        formatted.push({
+          sessionId: `U-${session._id.slice(-4)}`,
+          user: `${session.userId?.firstName || 'N/A'}`,
+          expert: session.expertId?.firstName || 'Expert',
+          date: session.sessionDate ? session.sessionDate.split(',')[0] : 'N/A',
+          time: session.sessionDate ? session.sessionDate.split(',')[1].trim() : 'N/A',
+          duration: session.duration && session.duration.includes("-")
+            ? session.duration.split("-")[1].trim()
+            : (session.duration || 'N/A'),
+          feedback: session.comment || 'No feedback',
+        });
+      });
+
+      res.data.expertToExpertSessions.forEach((session) => {
+        formatted.push({
+          sessionId: `E-${session._id.slice(-4)}`,
+          user: `${session.consultingExpertID?.firstName || 'N/A'}`,
+          expert: session.expertId?.firstName || 'Expert',
+          date: session.sessionDate ? session.sessionDate.split(',')[0] : 'N/A',
+          time: session.sessionDate ? session.sessionDate.split(',')[1].trim() : 'N/A',
+          duration: session.duration && session.duration.includes("-")
+            ? session.duration.split("-")[1].trim()
+            : (session.duration || 'N/A'),
+          feedback: session.comment || 'No feedback',
+        });
+      });
+
+      setSessions(formatted);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch sessions:", error);
+      setLoading(false);
+    }
+  };
+
+  fetchSessions();
+}, []);
+
+  // Handle status selection
+  const handleStatusSelect = (status) => {
+    setStatusFilter(status);
+    setIsDropdownOpen(false);
+  };
+
+  // 🔍 Filter logic
+  const filteredSessions = sessions
+    .filter((session) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        session.sessionId.toLowerCase().includes(searchLower) ||
+        session.user.toLowerCase().includes(searchLower) ||
+        session.expert.toLowerCase().includes(searchLower) ||
+        session.date.toLowerCase().includes(searchLower) ||
+        session.time.toLowerCase().includes(searchLower) ||
+        (session.duration && session.duration.toLowerCase().includes(searchLower)) ||
+        (session.feedback && session.feedback.toLowerCase().includes(searchLower))
+      );
+    });
+
   const indexOfLastSession = currentPage * sessionsPerPage;
   const indexOfFirstSession = indexOfLastSession - sessionsPerPage;
-  const currentSessions = filteredSessions.slice(indexOfFirstSession, indexOfLastSession);
+  const currentSessions = filteredSessions.slice(
+    indexOfFirstSession,
+    indexOfLastSession
+  );
 
-  // Change page
+  // Pagination
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Handle dropdown toggle
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   // Open Popup with session details
@@ -132,7 +128,6 @@ const SessionHistory = () => {
         {/* Buttons for Action Session and Session History */}
         <div className="flex gap-1 mb-2">
           <button
-            onClick={() => setActiveSession("Action Session")}
             className={`py-2 px-6 ${activeSession === "Action Session" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
           >
             <Link href="/sessionmanagement">
@@ -140,6 +135,7 @@ const SessionHistory = () => {
             </Link>
           </button>
           <button
+            onClick={() => setActiveSession("Session History")}
             className={`py-2 px-6 ${activeSession === "Session History" ? "bg-black text-white" : "bg-white text-black shadow-lg"}`}
           >
             <Link href="/sessionhistory">
@@ -148,61 +144,60 @@ const SessionHistory = () => {
           </button>
         </div>
 
-<div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-6">
-  {/* Search Bar */}
-  <div className="relative w-full sm:w-1/3">
-    <h2 className="text-[#191919]">Search by Session</h2>
-    <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
-      <Search className="m-1 text-white" size={16} />
-    </div>
-    <input
-      type="text"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      className="p-2 rounded-xl border border-gray-300 w-full bg-gray-100 text-gray-700 focus:outline-none pl-10"
-      placeholder="Search by Session"
-    />
-  </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5 mb-6">
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-1/3">
+            <h2 className="text-[#191919]">Search by Session</h2>
+            <div className="absolute h-6 w-6 bg-[#EC6453] rounded-full mt-2 ml-2">
+              <Search className="m-1 text-white" size={16} />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="p-2 rounded-xl border border-gray-300 w-full bg-gray-100 text-gray-700 focus:outline-none pl-10"
+              placeholder="Search by Session"
+            />
+          </div>
 
-  {/* Status Dropdown */}
-  <div className="relative mt-8 sm:mt-0 sm:w-1/3">
-    <button
-      onClick={toggleDropdown}
-      className="p-2 mt-6 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-20"
-    >
-      {statusFilter} <RiArrowDropDownLine size={20} />
-    </button>
-    {isDropdownOpen && (
-      <div className="absolute bg-white border border-gray-300 w-40 mt-2 rounded-lg shadow-lg">
-        <button
-          onClick={() => handleStatusSelect("All Status")}
-          className="px-4 py-2 text-sm w-full text-left"
-        >
-          All Status
-        </button>
-        <button
-          onClick={() => handleStatusSelect("Ongoing")}
-          className="px-4 py-2 text-sm w-full text-left"
-        >
-          Ongoing
-        </button>
-        <button
-          onClick={() => handleStatusSelect("Completed")}
-          className="px-4 py-2 text-sm w-full text-left"
-        >
-          Completed
-        </button>
-        <button
-          onClick={() => handleStatusSelect("Canceled")}
-          className="px-4 py-2 text-sm w-full text-left"
-        >
-          Canceled
-        </button>
-      </div>
-    )}
-  </div>
-</div>
-
+          {/* Status Dropdown */}
+          <div className="relative mt-8 sm:mt-0 sm:w-1/3">
+            <button
+              onClick={toggleDropdown}
+              className="p-2 mt-6 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-20"
+            >
+              {statusFilter} <RiArrowDropDownLine size={20} />
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute bg-white border border-gray-300 w-40 mt-2 rounded-lg shadow-lg">
+                <button
+                  onClick={() => handleStatusSelect("All Status")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  All Status
+                </button>
+                <button
+                  onClick={() => handleStatusSelect("Ongoing")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  Ongoing
+                </button>
+                <button
+                  onClick={() => handleStatusSelect("Completed")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  Completed
+                </button>
+                <button
+                  onClick={() => handleStatusSelect("Canceled")}
+                  className="px-4 py-2 text-sm w-full text-left"
+                >
+                  Canceled
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Export as excel Button */}
         <div className="flex justify-end gap-4 sm:-mt-24 pb-10 mb-10">
@@ -220,40 +215,43 @@ const SessionHistory = () => {
           </div>
         </div>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto w-full">
-          <table className="w-full">
-            <thead className="border-y-2 border-[#FA9E93]">
-              <tr>
-                <th className="p-2 text-center">SESSION ID</th>
-                <th className="p-2 text-center">USER</th>
-                <th className="p-2 text-center">EXPERT</th>
-                <th className="p-2 text-center">DATE/TIME</th>
-                <th className="p-2 text-center">DURATION</th>
-                <th className="p-2 text-center">FEEDBACK</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentSessions.map((session, index) => (
-                <tr key={index} className="hover:bg-gray-100">
-                  <td className="p-2">{session.sessionId}</td>
-                  <td className="p-2">{session.user}</td>
-                  <td className="p-2">{session.expert}</td>
-                  <td className="p-2">{session.date}<br />{session.time}</td>
-                  <td className="p-2">{session.duration}</td>
-                  <td className="p-2">{session.feedback}</td>
+        {loading ? (
+          <div className="text-center py-4">Loading sessions...</div>
+        ) : (
+          <div className="overflow-x-auto w-full">
+            <table className="w-full">
+              <thead className="border-y-2 border-[#FA9E93]">
+                <tr>
+                  <th className="p-2 text-center">SESSION ID</th>
+                  <th className="p-2 text-center">USER</th>
+                  <th className="p-2 text-center">EXPERT</th>
+                  <th className="p-2 text-center">DATE/TIME</th>
+                  <th className="p-2 text-center">DURATION</th>
+                  <th className="p-2 text-center">FEEDBACK</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {currentSessions.map((session, index) => (
+                  <tr key={index} className="hover:bg-gray-100">
+                    <td className="p-2 text-center">{session.sessionId}</td>
+                    <td className="p-2 text-center">{session.user}</td>
+                    <td className="p-2 text-center">{session.expert}</td>
+                    <td className="p-2 text-center">{session.date}<br />{session.time}</td>
+                    <td className="p-2 text-center">{session.duration}</td>
+                    <td className="p-2 text-center">{session.feedback}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <div className="flex justify-center items-center mt-4">
-  {/* Display Total Sessions */}
-  <div className="text-md text-[red] mb-2">
-    Total: {filteredSessions.length}
-  </div>
-</div>
+          {/* Display Total Sessions */}
+          <div className="text-md text-[red] mb-2">
+            Total: {filteredSessions.length}
+          </div>
+        </div>
 
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
@@ -304,6 +302,10 @@ const SessionHistory = () => {
               <div className="flex justify-between">
                 <span className="text-[#191919] font-medium w-1/3">Date</span>
                 <span className="font-normal w-2/3 text-right">{selectedSession.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#191919] font-medium w-1/3">Time</span>
+                <span className="font-normal w-2/3 text-right">{selectedSession.time}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#191919] font-medium w-1/3">User</span>
