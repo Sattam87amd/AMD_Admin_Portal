@@ -7,10 +7,18 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import axios from "axios";
 
+// Import the necessary libraries for phone number parsing
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
+
+// Initialize the country data
+countries.registerLocale(enLocale);
+
 const Experts = () => {
   const [experts, setExperts] = useState([]);
   const [filteredExperts, setFilteredExperts] = useState([]);
-  const [countries, setCountries] = useState([]);
+  const [uniqueCountries, setUniqueCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,31 +26,84 @@ const Experts = () => {
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
   const [selectedSessions, setSelectedSessions] = useState("All");
   const [selectedUsername, setSelectedUsername] = useState("");
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await fetch("http://localhost:5070/api/countries"); // Match your backend port
-        const countryNames = await response.json();
-        setCountries(countryNames);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
+  // Function to extract country from phone number - similar to UserManagement
+  const getCountryFromPhone = (phoneNumber) => {
+    try {
+      // Check if phoneNumber is a string
+      if (!phoneNumber || typeof phoneNumber !== 'string') {
+        return "Unknown";
       }
-    };
 
-    fetchCountries();
-  }, []);
+      // Make sure the phone number is in international format (with +)
+      let formattedNumber = phoneNumber;
+      if (!phoneNumber.startsWith('+')) {
+        formattedNumber = '+' + phoneNumber;
+      }
 
+      const parsedNumber = parsePhoneNumberFromString(formattedNumber);
 
+      if (parsedNumber && parsedNumber.country) {
+        return countries.getName(parsedNumber.country, 'en');
+      }
+
+      // If parsing fails, try to match country code manually
+      const countryCodeMap = {
+        '1': 'United States',
+        '44': 'United Kingdom',
+        '91': 'India',
+        '86': 'China',
+        '49': 'Germany',
+        '33': 'France',
+        '81': 'Japan',
+        '39': 'Italy',
+        '7': 'Russia',
+        '55': 'Brazil',
+        // Add more common country codes as needed
+      };
+
+      // Extract the potential country code (first 1-3 digits after removing +)
+      const strippedNumber = phoneNumber.replace(/^\+/, '');
+
+      for (let i = 1; i <= 3; i++) {
+        const potentialCode = strippedNumber.substring(0, i);
+        if (countryCodeMap[potentialCode]) {
+          return countryCodeMap[potentialCode];
+        }
+      }
+
+      return "Unknown";
+    } catch (error) {
+      console.error("Error parsing phone number:", error);
+      return "Unknown";
+    }
+  };
 
   useEffect(() => {
     const fetchExperts = async () => {
       try {
         const { data } = await axios.get("http://localhost:5070/api/expertauth");
-        setExperts(data.data);
-        setFilteredExperts(data.data);
+        
+        // Process each expert to add country based on phone number
+        const processedExperts = data.data.map((expert) => {
+          // If expert already has a country property, use it, otherwise derive from phone
+          const countryName = expert.country || getCountryFromPhone(expert.phone);
+          return {
+            ...expert,
+            country: countryName,
+          };
+        });
+
+        // Extract unique countries for the dropdown
+        const countries = [...new Set(processedExperts.map(expert => expert.country))].filter(country => country !== "Unknown");
+        setUniqueCountries(countries);
+
+        setExperts(processedExperts);
+        setFilteredExperts(processedExperts);
       } catch (error) {
         console.error("Error fetching experts:", error);
+        setError("Failed to fetch experts. Please try again later.");
       }
     };
 
@@ -52,8 +113,6 @@ const Experts = () => {
   useEffect(() => {
     let tempExperts = [...experts];
   
-    
-  
     if (selectedCountry !== "All") {
       tempExperts = tempExperts.filter((expert) => expert.country === selectedCountry);
     }
@@ -62,7 +121,6 @@ const Experts = () => {
       tempExperts = tempExperts.filter((expert) => expert.liveSessions === parseInt(selectedSessions));
     }
   
-    
     if (selectedUsername) {
       tempExperts = tempExperts.filter((expert) => {
         const fullName = (expert.firstName + ' ' + expert.lastName).toLowerCase();
@@ -74,9 +132,6 @@ const Experts = () => {
     setCurrentPage(1);
   }, [selectedCountry, selectedSessions, selectedUsername, experts]);
   
-
-
-
   const sortTable = (key) => {
     let direction = sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
 
@@ -109,29 +164,40 @@ const Experts = () => {
       <div className="w-11/12">
         <h1 className="text-3xl font-bold mb-6 text-[#191919]">EXPERTS</h1>
 
+        {/* Display Error Message if present */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>{error}</p>
+            <button 
+              className="float-right font-bold" 
+              onClick={() => setError(null)}
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-4">
-            {/* Select by Country */}
             {/* Select by Country */}
             <div>
               <h3 className="mb-2">Select by Country</h3>
               <select
                 className="p-2 w-48 rounded-lg border border-black bg-gray-200 text-red-600 cursor-pointer"
                 value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)} // Handling the country selection
+                onChange={(e) => setSelectedCountry(e.target.value)}
               >
                 {/* All Option */}
                 <option value="All">All</option>
 
-                {/* Map through the countries to display them */}
-                {countries.map((country, index) => (
+                {/* Map through the unique countries detected from phone numbers */}
+                {uniqueCountries.map((country, index) => (
                   <option key={index} value={country}>
                     {country}
                   </option>
                 ))}
               </select>
             </div>
-
 
             {/* Select by No. of Live Sessions */}
             <div>

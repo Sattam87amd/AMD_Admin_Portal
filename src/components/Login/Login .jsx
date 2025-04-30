@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 // import { Link } from "lucide-react";
 import Link from "next/link";
-import { RxCross2 } from "react-icons/rx";
+
 import axios from "axios";
 
 
@@ -116,9 +116,7 @@ function UserLoginPage() {
             height={40}
           />
         </div>
-        <div className="absolute top-0 right-0 p-4 z-10">
-  <RxCross2 size={24} />
-</div>
+        
 
 
         <div className="w-full max-w-md p-8 -mt-10 md:mt-0 ">
