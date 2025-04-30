@@ -114,7 +114,17 @@ const SessionHistory = () => {
 
   // Function to handle Excel file download
   const downloadExcel = () => {
-    const ws = utils.json_to_sheet(filteredSessions);
+    // Extract only the fields displayed in the table
+    const tableData = filteredSessions.map((session) => ({
+      "Session ID": session.sessionId,
+      User: session.user,
+      Expert: session.expert,
+      "Date/Time": `${session.date} ${session.time}`,
+      Duration: session.duration,
+      Feedback: session.feedback,
+    }));
+
+    const ws = utils.json_to_sheet(tableData);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Sessions");
     writeFile(wb, "SessionHistory.xlsx");

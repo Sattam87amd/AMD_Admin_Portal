@@ -26,16 +26,37 @@ const Review = () => {
         setLoading(true);
         const response = await axios.get(`http://localhost:5070/api/adminauth/review`);
         console.log("API Response:", response.data);
-        
+  
         if (response.data.success) {
-          // Map the backend data to match our frontend structure
-          const formattedReviews = response.data.feedback.map((item, index) => ({
-            reviewId: item._id.toString().slice(-4) || `review-${index}`,
-            expert: item.expertName || "Unknown Expert",
-            rating: item.Rating ? `${item.Rating} STARS` : "No Rating",
-            content: item.comment || "No Comment"
-          }));
-          
+          // Sort reviews by latest first using createdAt (assuming it's in your schema)
+          const sorted = [...response.data.feedback].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+          const formattedReviews = sorted.map((item, index) => {
+            // Get expert initials
+            const nameParts = item.expertName?.split(" ") || [];
+            const initials = nameParts.map(n => n[0]?.toUpperCase()).join("").slice(0, 2) || "XX";
+  
+            // Short _id or fallback
+            const shortId = item?._id ? item._id.toString().slice(-4).toUpperCase() : `00${index + 1}`;
+  
+            // Format review date
+            const reviewDate = item.createdAt
+              ? new Date(item.createdAt).toLocaleDateString('en-IN', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })
+              : "Date Not Available";
+  
+            return {
+              reviewId: `REV-${initials}-${shortId}`,
+              expert: item.expertName || "Unknown Expert",
+              rating: item.Rating ? `${item.Rating} STARS` : "No Rating",
+              content: item.comment || "No Comment",
+              date: reviewDate
+            };
+          });
+  
           setReviews(formattedReviews);
         } else {
           setError("Failed to fetch reviews");
@@ -47,9 +68,10 @@ const Review = () => {
         setLoading(false);
       }
     };
-
+  
     fetchReviews();
   }, []);
+  
 
   // Sort table data
   const sortTable = (key) => {

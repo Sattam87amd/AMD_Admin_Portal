@@ -193,7 +193,17 @@ const UserManagement = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const downloadExcel = () => {
-    const ws = utils.json_to_sheet(filteredUsers);
+    // Extract only the fields displayed in the table
+    const tableData = filteredUsers.map((user) => ({
+      Country: user.country,
+      FirstName: user.firstName,
+      LastName: user.lastName,
+      Email: user.email,
+      Status: user.status,
+      Phone: user.phone,
+    }));
+
+    const ws = utils.json_to_sheet(tableData);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Users");
     writeFile(wb, "UserManagement.xlsx");
