@@ -283,24 +283,54 @@ const UserManagement = () => {
     }
   };
 
-  const handleHistory = async (user) => {
-    try {
-      // Fetch booking history based on the user (you may need to filter by user ID or other criteria)
-      const response = await axios.get(`http://localhost:5070/api/adminauth/bookings`);
-  
-      if (response.data.success) {
-        // Assuming the bookings returned are in the 'bookings' field
-        setUserHistory(response.data.bookings);  // Set booking history for the user
-        setIsHistoryPopupOpen(true);  // Open the booking history popup
-      } else {
-        setError("Failed to fetch booking history.");
+ // Replace your current handleHistory function with this corrected version
+ const handleHistory = async (user) => {
+  try {
+    // Log the full user object to see its structure
+    console.log("User object:", user);
+    console.log("User ID type:", typeof user._id);
+    console.log("User ID value:", user._id);
+    
+    // Include authentication token in the request headers
+    const response = await axios.get(
+      `http://localhost:5070/api/adminauth/bookings?userId=${user._id}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
       }
-    } catch (error) {
-      console.error('Error fetching booking history:', error);
-      setError("Failed to fetch booking history. Please try again later.");
+    );
+    
+    console.log("Full API response:", response);
+    
+    if (response.data.success) {
+      setUserHistory(response.data.bookings);
+      setIsHistoryPopupOpen(true);
+      
+      // If there are no bookings, show a message but still open the popup
+      if (response.data.bookings.length === 0) {
+        setError("This user has no booking history.");
+      }
+    } else {
+      setError("Failed to fetch booking history: " + (response.data.message || "Unknown error"));
     }
-  };
-  
+  } catch (error) {
+    console.error('Error fetching booking history:', error);
+    console.error('Error details:', error.response?.data);
+    
+    // Extract the specific error message from the response if available
+    const errorMessage = error.response?.data?.message || 
+                        error.message || 
+                        "Failed to fetch booking history";
+                        
+    setError(errorMessage);
+    
+    // Still open the popup but it will show no results
+    setUserHistory([]);
+    setIsHistoryPopupOpen(true);
+  }
+};
 
   return (
     <div className="flex justify-center w-full p-6 bg-white">

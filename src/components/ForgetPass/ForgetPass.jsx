@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Inter } from "next/font/google";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { RxCross2 } from "react-icons/rx";
+
 
 
 const interFont = Inter({
@@ -104,9 +104,7 @@ function UserForgotPasswordPage() {
             height={40}
           />
         </div>
-        <div className="absolute right-0 top-0 p-4 z-10">
-        <RxCross2 size={24} />
-        </div>
+       
 
         <div className="w-full max-w-md p-8 -mt-10 md:mt-0 ">
           <h1 className="text-2xl md:text-[40px] font-bold text-center">
