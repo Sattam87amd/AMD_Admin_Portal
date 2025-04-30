@@ -14,13 +14,13 @@ const Navbar = () => {
 
   return (
     <nav className="flex justify-between items-center p-6 bg-white">
-      {/* Logo */}
+      {/* Logo
       <div className="flex items-center">
         <img src="/AMD_icon.png" alt="Logo" className="h-12" />
-      </div>
+      </div> */}
 
       {/* AMD Brand (Text is larger now) */}
-      <div className="text-3xl font-bold text-black">AMD</div>
+      <div className="text-3xl font-bold text-black capitalize flex items-center justify-center ml-[44rem] ">shourk</div>
 
       {/* Notification Icon and Profile */}
       <div className="flex items-center space-x-4 relative">
@@ -37,7 +37,7 @@ const Navbar = () => {
         {/* Profile Section */}
         <div className="flex items-center space-x-2">
           {/* Text "AMD" */}
-          <span className="text-black font-semibold">AMD</span>
+          <span className="text-black font-semibold capitalize ">admin</span>
 
           {/* Profile Icon */}
           <div className="relative">
