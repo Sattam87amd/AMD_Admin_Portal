@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { utils, writeFile } from "xlsx";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { IoMdArrowDropup, IoMdArrowDropdown } from "react-icons/io";
 
 const Transaction = () => {
@@ -166,6 +166,20 @@ const Transaction = () => {
     );
   };
 
+  const sortedSessions = [...dummyTransactions].sort((a, b) => {
+    if (sortConfig.key) {
+      const valueA = a[sortConfig.key];
+      const valueB = b[sortConfig.key];
+      if (valueA < valueB) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+    }
+    return 0;
+  });
+
   return (
     <div className="flex justify-left w-full p-4 sm:p-6 bg-white">
       <div className="w-full sm:w-11/16">
@@ -323,40 +337,111 @@ const Transaction = () => {
         </div>
 
         {/* Pagination Section */}
-        {filteredTransactions.length > 0 && (
-          <div className="flex justify-center items-center mt-4">
-            <div className="border rounded-lg shadow-xl">
-              {/* Left Arrow */}
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
-              >
-                <FaChevronLeft />
-              </button>
+        <div className="flex justify-center items-center mt-4">
+          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
+            {/* Previous Button */}
+            <button
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg ${currentPage === 1
+                ? "text-gray-500 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <MdKeyboardArrowLeft size={20} />
+            </button>
 
-              {/* Page Numbers */}
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => paginate(i + 1)}
-                  className={`mx-1 px-3 py-1 rounded ${currentPage === i + 1 ? "bg-[#C91416] text-white" : "bg-gray-200"}`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            {/* Page Numbers with Ellipsis */}
+            {(() => {
+              const totalPages = Math.ceil(sortedSessions.length / itemsPerPage);
+              const pages = [];
 
-              {/* Right Arrow */}
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="mx-1 px-3 py-1 rounded text-gray-700 disabled:opacity-50"
-              >
-                <FaChevronRight />
-              </button>
-            </div>
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+              } else {
+                pages.push(
+                  <button
+                    key={1}
+                    onClick={() => paginate(1)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === 1
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    1
+                  </button>
+                );
+
+                if (currentPage > 3) {
+                  pages.push(<span key="ellipsis1" className="text-gray-500">...</span>);
+                }
+
+                for (
+                  let i = Math.max(2, currentPage - 1);
+                  i <= Math.min(totalPages - 1, currentPage + 1);
+                  i++
+                ) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+
+                if (currentPage < totalPages - 2) {
+                  pages.push(<span key="ellipsis2" className="text-gray-500">...</span>);
+                }
+
+                pages.push(
+                  <button
+                    key={totalPages}
+                    onClick={() => paginate(totalPages)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === totalPages
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    {totalPages}
+                  </button>
+                );
+              }
+              return pages;
+            })()}
+
+            {/* Next Button */}
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === Math.ceil(sortedSessions.length / itemsPerPage)}
+              className={`p-2 rounded-lg ${currentPage === Math.ceil(sortedSessions.length / itemsPerPage)
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-red-500"
+                }`}
+            >
+              <MdKeyboardArrowRight size={20} />
+            </button>
           </div>
-        )}
+        </div>
+        
       </div>
     </div>
   );

@@ -28,8 +28,10 @@ const Page = () => {
 
       {/* Footer at the bottom - aligned with main content only */}
       <div className="flex mt-auto">
-        {/* Empty space to align with sidebar */}
-        <div className="hidden lg:block w-64 ml-8"></div>
+        {/* Empty space to align with sidebar and red divider */}
+        <div className="hidden lg:block w-64"></div>
+        {/* Space for red divider */}
+        <div className="hidden lg:block w-1 bg-red-600 ml-8"></div>
         {/* Footer aligned with main content */}
         <div className="flex-1">
           <Footer />

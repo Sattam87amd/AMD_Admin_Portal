@@ -1,7 +1,9 @@
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
+
 import Transaction from '@/components/Transactions/Transactions'
+
 import React from 'react'
 
 const Page = () => {
@@ -9,7 +11,7 @@ const Page = () => {
     <div className="flex flex-col min-h-screen">
       {/* Top Navbar */}
       <Navbar />
-
+      
       {/* Main Content Area */}
       <div className="flex flex-1">
         {/* Sidebar (Left) */}
@@ -22,11 +24,9 @@ const Page = () => {
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
-          <Transaction />
-          <div className='fixed bottom-0 w-[88.5rem]'>
+         <Transaction/>
           
           <Footer />
-          </div>
         </div>
         
       </div>
@@ -37,4 +37,4 @@ const Page = () => {
   )
 }
 
-export default Page;
+export default Page

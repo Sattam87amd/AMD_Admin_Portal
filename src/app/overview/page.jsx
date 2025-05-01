@@ -1,7 +1,7 @@
 import Footer from '@/components/Layout/Footer'
 import Navbar from '@/components/Layout/Navbar'
 import AdminSidebar from '@/components/Layout/Sidebar'
-import Overveiw from '@/components/Overview/Overview'
+import Overview from '@/components/Overview/Overview'
 
 import React from 'react'
 
@@ -23,7 +23,7 @@ const Page = () => {
 
         {/* Main Content (Right) */}
         <div className="flex-1  overflow-auto">
-         <Overveiw/>
+         <Overview/>
           
           <Footer />
         </div>

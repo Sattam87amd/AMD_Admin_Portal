@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search } from "lucide-react";
-import { FaDownload } from "react-icons/fa";
+import { Search, Download } from "lucide-react";
+
 import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import * as XLSX from "xlsx"; // Import xlsx library
@@ -172,14 +172,11 @@ const PaymentFinance = () => {
 
           {/* Export as Excel Button */}
           <button
-            onClick={handleExport}
-            className="flex items-center gap-2 text-red-500 text-lg font-medium cursor-pointer -mt-10 "
-          >
-            
-            <div className="bg-black p-1 rounded-xs">
-              <FaDownload className="text-white rounded-xl" />
-            </div>
-          </button>
+                     onClick={handleExport}
+                     className="flex mt-8 items-center justify-center w-12 h-12 bg-black text-white rounded-lg"
+                   >
+                     <Download size={24} className="text-white" />
+                   </button>
         </div>
 
         {/* Data Table */}
@@ -277,37 +274,101 @@ const PaymentFinance = () => {
 
         {/* Pagination */}
         <div className="flex justify-center items-center mt-4">
-          <div className="flex gap-6 p-2 border rounded-lg bg-white">
+          <div className="flex gap-2 p-2 border rounded-lg bg-white shadow-lg shadow-gray-400">
+            {/* Previous Button */}
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`p-2 rounded-lg ${currentPage === 1 ? "text-gray-300 cursor-not-allowed" : "text-red-500"
+              className={`p-2 rounded-lg ${currentPage === 1
+                ? "text-gray-500 cursor-not-allowed"
+                : "text-red-500"
                 }`}
             >
               <MdKeyboardArrowLeft size={20} />
             </button>
 
-            {[...Array(Math.ceil(filteredSessions.length / reviewsPerPage)).keys()].map(
-              (number) => (
-                <button
-                  key={number + 1}
-                  onClick={() => paginate(number + 1)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-base ${currentPage === number + 1
-                    ? "bg-red-500 text-white"
-                    : "text-[#FA9E93] bg-white"
-                    }`}
-                >
-                  {number + 1}
-                </button>
-              )
-            )}
+            {/* Page Numbers with Ellipsis */}
+            {(() => {
+              const totalPages = Math.ceil(sortedSessions.length / reviewsPerPage);
+              const pages = [];
 
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+              } else {
+                pages.push(
+                  <button
+                    key={1}
+                    onClick={() => paginate(1)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === 1
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    1
+                  </button>
+                );
+
+                if (currentPage > 3) {
+                  pages.push(<span key="ellipsis1" className="text-gray-500">...</span>);
+                }
+
+                for (
+                  let i = Math.max(2, currentPage - 1);
+                  i <= Math.min(totalPages - 1, currentPage + 1);
+                  i++
+                ) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => paginate(i)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === i
+                        ? "bg-red-500 text-white border-red-500"
+                        : "text-[#FA9E93] bg-white border-gray-300"
+                        }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+
+                if (currentPage < totalPages - 2) {
+                  pages.push(<span key="ellipsis2" className="text-gray-500">...</span>);
+                }
+
+                pages.push(
+                  <button
+                    key={totalPages}
+                    onClick={() => paginate(totalPages)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-base border ${currentPage === totalPages
+                      ? "bg-red-500 text-white border-red-500"
+                      : "text-[#FA9E93] bg-white border-gray-300"
+                      }`}
+                  >
+                    {totalPages}
+                  </button>
+                );
+              }
+              return pages;
+            })()}
+
+            {/* Next Button */}
             <button
               onClick={() => paginate(currentPage + 1)}
-              disabled={
-                currentPage === Math.ceil(filteredSessions.length / reviewsPerPage)
-              }
-              className={`p-2 rounded-lg ${currentPage === Math.ceil(filteredSessions.length / reviewsPerPage)
+              disabled={currentPage === Math.ceil(sortedSessions.length / reviewsPerPage)}
+              className={`p-2 rounded-lg ${currentPage === Math.ceil(sortedSessions.length / reviewsPerPage)
                 ? "text-gray-300 cursor-not-allowed"
                 : "text-red-500"
                 }`}
