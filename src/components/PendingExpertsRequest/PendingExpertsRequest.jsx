@@ -9,39 +9,100 @@ import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { Check, X, User } from "lucide-react";
 import axios from "axios";
 
+// Import the necessary libraries for phone number parsing
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
+
+// Initialize the country data
+countries.registerLocale(enLocale);
+
 const PendingExpertsRequest = () => {
   const router = useRouter();
   const [experts, setExperts] = useState([]);
   const [filteredExperts, setFilteredExperts] = useState([]);
-  const [countries, setCountries] = useState([]);
+  const [uniqueCountries, setUniqueCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [selectedUsername, setSelectedUsername] = useState("");
-  const[selectedStatus, setSelectedStatus] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
 
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await axios.get("https://amd-api.code4bharat.com/api/countries");
-        const countryNames = response.data.map(country => country.name.common).sort();
-        setCountries(["All", ...countryNames]);
-      } catch (error) {
-        console.error("Error fetching countries:", error);
+  // Function to extract country from phone number - imported from Experts component
+  const getCountryFromPhone = (phoneNumber) => {
+    try {
+      // Check if phoneNumber is a string
+      if (!phoneNumber || typeof phoneNumber !== 'string') {
+        return "Unknown";
       }
-    };
 
-    fetchCountries();
-  }, []);
+      // Make sure the phone number is in international format (with +)
+      let formattedNumber = phoneNumber;
+      if (!phoneNumber.startsWith('+')) {
+        formattedNumber = '+' + phoneNumber;
+      }
+
+      const parsedNumber = parsePhoneNumberFromString(formattedNumber);
+
+      if (parsedNumber && parsedNumber.country) {
+        return countries.getName(parsedNumber.country, 'en');
+      }
+
+      // If parsing fails, try to match country code manually
+      const countryCodeMap = {
+        '1': 'United States',
+        '44': 'United Kingdom',
+        '91': 'India',
+        '86': 'China',
+        '49': 'Germany',
+        '33': 'France',
+        '81': 'Japan',
+        '39': 'Italy',
+        '7': 'Russia',
+        '55': 'Brazil',
+        // Add more common country codes as needed
+      };
+
+      // Extract the potential country code (first 1-3 digits after removing +)
+      const strippedNumber = phoneNumber.replace(/^\+/, '');
+
+      for (let i = 1; i <= 3; i++) {
+        const potentialCode = strippedNumber.substring(0, i);
+        if (countryCodeMap[potentialCode]) {
+          return countryCodeMap[potentialCode];
+        }
+      }
+
+      return "Unknown";
+    } catch (error) {
+      console.error("Error parsing phone number:", error);
+      return "Unknown";
+    }
+  };
 
   useEffect(() => {
     const fetchExperts = async () => {
       try {
         const { data } = await axios.get("https://amd-api.code4bharat.com/api/expertauth");
         const pendingExperts = data.data.filter(expert => expert.status === "Pending");
-        setExperts(pendingExperts);
-        setFilteredExperts(pendingExperts);
+        
+        // Process each expert to add country based on phone number
+        const processedExperts = pendingExperts.map((expert) => {
+          // If expert already has a country property, use it, otherwise derive from phone
+          const countryName = expert.country || getCountryFromPhone(expert.phone);
+          return {
+            ...expert,
+            country: countryName,
+          };
+        });
+
+        // Extract unique countries for the dropdown
+        const countries = [...new Set(processedExperts.map(expert => expert.country))].filter(country => country !== "Unknown");
+        setUniqueCountries(countries);
+
+        setExperts(processedExperts);
+        setFilteredExperts(processedExperts);
       } catch (error) {
         console.error("Error fetching experts:", error);
       }
@@ -58,14 +119,19 @@ const PendingExpertsRequest = () => {
     }
 
     if (selectedUsername) {
-      tempExperts = tempExperts.filter(expert =>
-        expert.username.toLowerCase().includes(selectedUsername.toLowerCase())
-      );
+      tempExperts = tempExperts.filter(expert => {
+        const fullName = `${expert.firstName} ${expert.lastName}`.toLowerCase();
+        return fullName.includes(selectedUsername.toLowerCase());
+      });
+    }
+
+    if (selectedStatus !== "All") {
+      tempExperts = tempExperts.filter(expert => expert.status === selectedStatus);
     }
 
     setFilteredExperts(tempExperts);
     setCurrentPage(1);
-  }, [selectedCountry, selectedUsername, experts]);
+  }, [selectedCountry, selectedUsername, selectedStatus, experts]);
 
   const sortTable = (key) => {
     let direction = sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
@@ -144,8 +210,14 @@ const PendingExpertsRequest = () => {
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
               >
-                {countries.map((country, index) => (
-                  <option key={index} value={country}>{country}</option>
+                {/* All Option */}
+                <option value="All">All</option>
+
+                {/* Map through the unique countries detected from phone numbers */}
+                {uniqueCountries.map((country, index) => (
+                  <option key={index} value={country}>
+                    {country}
+                  </option>
                 ))}
               </select>
             </div>
@@ -158,8 +230,9 @@ const PendingExpertsRequest = () => {
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
                 <option value="All">All</option>
-                <option value="Accepted">Accepted</option>
+                <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
+                <option value="Pending">Pending</option>
               </select>
             </div>
 
@@ -212,7 +285,7 @@ const PendingExpertsRequest = () => {
           <tbody>
             {currentItems.map((expert) => (
               <tr key={expert.id} className="hover:bg-gray-50 border-b border-gray-200">
-                <td className="p-5 text-left">India</td>
+                <td className="p-5 text-left">{expert.country}</td>
                 <td className="text-left">{expert.firstName}</td>
                 <td className="text-left">{expert.lastName}</td>
                 <td className="text-left">{expert.email}</td>
@@ -220,10 +293,10 @@ const PendingExpertsRequest = () => {
                   <div className="flex gap-2">
                   {expert.status === "Pending" ? (
                   <>
-                    <button className="w-[50px] h-[40px] bg-[#60DF7C] text-white rounded-md " onClick={() => acceptRequest(expert._id)}>
+                    <button className="w-[50px] h-[40px] bg-[#60DF7C] text-white flex items-center justify-center rounded-md " onClick={() => acceptRequest(expert._id)}>
                       <Check size={28} strokeWidth={2} />
                     </button>
-                    <button className="w-[50px] h-[40px] bg-[#FF2A2A] text-white rounded-md" onClick={() => rejectRequest(expert._id)}>
+                    <button className="w-[50px] h-[40px] bg-[#FF2A2A] text-white flex items-center justify-center rounded-md" onClick={() => rejectRequest(expert._id)}>
                       <X size={28} strokeWidth={2} />
                     </button>
                   </>
@@ -232,8 +305,8 @@ const PendingExpertsRequest = () => {
                     <span className="text-white">{expert.status}</span>
                   </div>
                 )}
-                <button className="w-[50px] h-[40px] bg-black text-white rounded-md" onClick={() => handleProfileClick(expert.username)}>
-                  <User size={28} strokeWidth={2} />
+                <button className="w-[50px] h-[40px] bg-black text-white rounded-md flex items-center justify-center" onClick={() => handleProfileClick(expert.username)}>
+                  <User size={28} strokeWidth={2}/>
                 </button>
               </div>
             </td>

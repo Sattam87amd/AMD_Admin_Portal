@@ -13,7 +13,7 @@ const SessionHistory = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSession, setActiveSession] = useState("Session History");
-  const [statusFilter, setStatusFilter] = useState("All Status");
+  // const [statusFilter, setStatusFilter] = useState("All Status");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -67,11 +67,11 @@ const SessionHistory = () => {
   fetchSessions();
 }, []);
 
-  // Handle status selection
-  const handleStatusSelect = (status) => {
-    setStatusFilter(status);
-    setIsDropdownOpen(false);
-  };
+  // // Handle status selection
+  // const handleStatusSelect = (status) => {
+  //   setStatusFilter(status);
+  //   setIsDropdownOpen(false);
+  // };
 
   // 🔍 Filter logic
   const filteredSessions = sessions
@@ -114,7 +114,17 @@ const SessionHistory = () => {
 
   // Function to handle Excel file download
   const downloadExcel = () => {
-    const ws = utils.json_to_sheet(filteredSessions);
+    // Extract only the fields displayed in the table
+    const tableData = filteredSessions.map((session) => ({
+      "Session ID": session.sessionId,
+      User: session.user,
+      Expert: session.expert,
+      "Date/Time": `${session.date} ${session.time}`,
+      Duration: session.duration,
+      Feedback: session.feedback,
+    }));
+
+    const ws = utils.json_to_sheet(tableData);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Sessions");
     writeFile(wb, "SessionHistory.xlsx");
@@ -161,7 +171,7 @@ const SessionHistory = () => {
           </div>
 
           {/* Status Dropdown */}
-          <div className="relative mt-8 sm:mt-0 sm:w-1/3">
+          {/* <div className="relative mt-8 sm:mt-0 sm:w-1/3">
             <button
               onClick={toggleDropdown}
               className="p-2 mt-6 rounded-xl w-full sm:w-48 border text-[#191919] flex items-center gap-20"
@@ -196,8 +206,8 @@ const SessionHistory = () => {
                 </button>
               </div>
             )}
-          </div>
-        </div>
+          </div>*/}
+        </div> 
 
         {/* Export as excel Button */}
         <div className="flex justify-end gap-4 sm:-mt-24 pb-10 mb-10">

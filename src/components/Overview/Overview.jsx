@@ -121,10 +121,10 @@ const GraphComponent = () => {
 
       {/* AMD Revenue */}
       <div className="flex flex-col items-start">
-        <h1 className="text-xl mb-4">AMD SHARE</h1>
+        <h1 className="text-xl mb-4">SHOURK SHARE</h1>
         <div className="w-[300px] bg-white p-4 rounded-lg shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[#191919] text-xs font-semibold">AMD Revenue</h3>
+            <h3 className="text-[#191919] text-xs font-semibold">Shourk Revenue</h3>
             <div
               className={`flex items-center text-sm ${amdChange >= 0 ? "text-green-500" : "text-red-500"
                 }`}
