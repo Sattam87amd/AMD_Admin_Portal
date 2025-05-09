@@ -103,7 +103,7 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5070/api/userauth/users");
+        const { data } = await axios.get("https://amd-api.code4bharat.com/api/userauth/users");
 
         // Process each user to add country based on phone number
         const processedUsers = data.data.map((user) => {
@@ -247,7 +247,7 @@ const UserManagement = () => {
     try {
       // Corrected URL and better error handling
       const response = await fetch(
-        `http://localhost:5070/api/userauth/deleteuser/${userToDelete._id}`, 
+        `https://amd-api.code4bharat.com/api/userauth/deleteuser/${userToDelete._id}`, 
         {
           method: 'DELETE',
           headers: {
@@ -293,7 +293,7 @@ const UserManagement = () => {
     
     // Include authentication token in the request headers
     const response = await axios.get(
-      `http://localhost:5070/api/adminauth/bookings?userId=${user._id}`,
+      `https://amd-api.code4bharat.com/api/adminauth/bookings?userId=${user._id}`,
       {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

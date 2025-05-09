@@ -12,7 +12,7 @@ const Domain = () => {
   useEffect(() => {
     const fetchExpertCounts = async () => {
       try {
-        const response = await axios.get("http://localhost:5070/api/expertauth");
+        const response = await axios.get("https://amd-api.code4bharat.com/api/expertauth");
 
         // Group experts by their areaOfExpertise and count them
         const areaCounts = response.data.data.reduce((acc, expert) => {

@@ -24,7 +24,7 @@ const PendingExpertsRequest = () => {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await axios.get("http://localhost:5070/api/countries");
+        const response = await axios.get("https://amd-api.code4bharat.com/api/countries");
         const countryNames = response.data.map(country => country.name.common).sort();
         setCountries(["All", ...countryNames]);
       } catch (error) {
@@ -38,7 +38,7 @@ const PendingExpertsRequest = () => {
   useEffect(() => {
     const fetchExperts = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5070/api/expertauth");
+        const { data } = await axios.get("https://amd-api.code4bharat.com/api/expertauth");
         const pendingExperts = data.data.filter(expert => expert.status === "Pending");
         setExperts(pendingExperts);
         setFilteredExperts(pendingExperts);
@@ -98,7 +98,7 @@ const PendingExpertsRequest = () => {
 
   const acceptRequest = async (expertId) => {
     try {
-      await axios.put(`http://localhost:5070/api/adminauth/experts/${expertId}/status`, {
+      await axios.put(`https://amd-api.code4bharat.com/api/adminauth/experts/${expertId}/status`, {
         status: "Approved",
       });
   
@@ -115,7 +115,7 @@ const PendingExpertsRequest = () => {
   
   const rejectRequest = async (expertId) => {
     try {
-      await axios.put(`http://localhost:5070/api/adminauth/experts/${expertId}/status`, {
+      await axios.put(`https://amd-api.code4bharat.com/api/adminauth/experts/${expertId}/status`, {
         status: "Rejected",
       });
   

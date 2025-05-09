@@ -59,7 +59,7 @@ function UserLoginPage() {
   
       try {
         const resp = await axios.post(
-          `http://localhost:5070/api/adminauth/login`,
+          `https://amd-api.code4bharat.com/api/adminauth/login`,
           { email, password }
         );
   

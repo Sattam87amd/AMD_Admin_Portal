@@ -25,7 +25,7 @@ const SessionHistory = () => {
  useEffect(() => {
   const fetchSessions = async () => {
     try {
-      const res = await axios.get("http://localhost:5070/api/sessions/getallsessions");
+      const res = await axios.get("https://amd-api.code4bharat.com/api/sessions/getallsessions");
       const formatted = [];
 
       res.data.userToExpertSessions.forEach((session) => {

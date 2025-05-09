@@ -83,7 +83,7 @@ const Experts = () => {
   useEffect(() => {
     const fetchExperts = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5070/api/expertauth");
+        const { data } = await axios.get("https://amd-api.code4bharat.com/api/expertauth");
         
         // Process each expert to add country based on phone number
         const processedExperts = data.data.map((expert) => {

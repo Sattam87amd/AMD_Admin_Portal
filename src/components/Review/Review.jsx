@@ -8,7 +8,7 @@ import { FaSortUp, FaSortDown } from "react-icons/fa";
 import { utils, writeFile } from "xlsx";
 import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5070/api/adminauth/review";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://amd-api.code4bharat.com/api/adminauth/review";
 
 const Review = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +24,7 @@ const Review = () => {
     const fetchReviews = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5070/api/adminauth/review`);
+        const response = await axios.get(`https://amd-api.code4bharat.com/api/adminauth/review`);
         console.log("API Response:", response.data);
         
         if (response.data.success) {
@@ -91,7 +91,7 @@ const Review = () => {
       }
       
       // Refresh the reviews list after action
-      const response = await axios.get(`http://localhost:5070/api/adminauth/review`);
+      const response = await axios.get(`https://amd-api.code4bharat.com/api/adminauth/review`);
       if (response.data.success) {
         const formattedReviews = response.data.feedback.map((item, index) => ({
           reviewId: item._id || `review-${index}`,
